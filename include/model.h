@@ -11,6 +11,16 @@ struct Vector3
     float z;
 };
 
+struct Ray
+{
+    Vector3 origin;
+    Vector3 direction;
+};
+
+Vector3 operator+( Vector3 const& lhs, Vector3 const& rhs);
+Vector3 operator/( Vector3 const& lhs, float const& rhs);
+Vector3 operator+( Vector3 const& lhs, float const& rhs);
+
 struct Face
 {
     ssize_t v1;

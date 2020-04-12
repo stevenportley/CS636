@@ -51,3 +51,20 @@ void Model::display_contents()
     }
 
 }
+
+Vector3 operator+( Vector3 const& lhs, Vector3 const& rhs)
+{
+    return { lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
+}
+
+Vector3 operator/( Vector3 const& lhs, float const& rhs)
+{
+    return { lhs.x / rhs, lhs.y / rhs, lhs.z / rhs};
+
+}
+
+Vector3 operator+( Vector3 const& lhs, float const& rhs)
+{
+    return { lhs.x + rhs, lhs.y + rhs, lhs.z + rhs};
+
+}
