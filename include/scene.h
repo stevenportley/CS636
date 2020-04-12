@@ -3,25 +3,19 @@
 #include <vector>
 #include "model.h"
 
-struct ViewPlane
-{
-    Vector3 origin;
-    ssize_t width;
-    ssize_t height;
-};
-
 class Scene
 {
     private:
         std::vector<Model> models;
         Vector3 camera_origin;
-        ViewPlane view_plane;
+        Vector3 camera_direction;
+        int viewplane_distance;
 
     public:
-        Scene(ssize_t view_plane_height, 
-                ssize_t view_plane_width, 
-                int distance,
-                Vector3 view_direction, 
+        Scene(int viewplane_distance,
+                Vector3 camera_direction,
                 Vector3 camera_origin);
+        void add_model(Model& new_model);
+        void render();
         
 };

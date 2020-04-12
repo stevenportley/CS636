@@ -4,7 +4,7 @@
 #include <fstream>
 
 #include "model.h"
-
+#include "scene.h"
 
 int main(int argc, char** argv)
 {
@@ -24,7 +24,10 @@ int main(int argc, char** argv)
 
     Model model(in);
 
-    model.display_contents();
+    //model.display_contents();
+
+    Scene scene(1, {1, 1, 1}, {0, 0, 0});
+    scene.render();
     return 0;
 
 }
