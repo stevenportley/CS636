@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "model.h"
+#include "mesh.h"
 #include "scene.h"
 
 int main(int argc, char** argv)
@@ -22,7 +22,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    Model model(in);
+    Mesh mesh(in);
 
     //model.display_contents();
 

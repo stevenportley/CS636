@@ -2,9 +2,12 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <cmath>
+#include "vector3.h"
 #include "model.h"
+#include "mesh.h"
 
-Model::Model(std::ifstream& model_file)
+Mesh::Mesh(std::ifstream& model_file)
 {
 
     std::string str;
@@ -39,7 +42,7 @@ Model::Model(std::ifstream& model_file)
 }
 
 
-void Model::display_contents()
+void Mesh::display_contents()
 {
     for( auto face : faces)
     {
@@ -52,19 +55,8 @@ void Model::display_contents()
 
 }
 
-Vector3 operator+( Vector3 const& lhs, Vector3 const& rhs)
+Vector3 Mesh::ray_intersect( const Ray& ray)
 {
-    return { lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
+    return {0.0f, 0.0f, 0.0f};
 }
 
-Vector3 operator/( Vector3 const& lhs, float const& rhs)
-{
-    return { lhs.x / rhs, lhs.y / rhs, lhs.z / rhs};
-
-}
-
-Vector3 operator+( Vector3 const& lhs, float const& rhs)
-{
-    return { lhs.x + rhs, lhs.y + rhs, lhs.z + rhs};
-
-}

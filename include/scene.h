@@ -10,6 +10,7 @@ class Scene
         Vector3 camera_origin;
         Vector3 camera_direction;
         int viewplane_distance;
+        void ray_trace();
 
     public:
         Scene(int viewplane_distance,
