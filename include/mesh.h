@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <vector>
 #include "model.h"
 
@@ -11,6 +12,6 @@ class Mesh: public Model
         
     public:
         Mesh( std::ifstream& mesh_file );
-        Vector3 ray_intersect(const Ray& ray);
+        std::optional<Vector3> ray_intersect(const Ray& ray);
         void display_contents();
 };

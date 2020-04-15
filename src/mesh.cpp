@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <cmath>
+#include <optional>
 #include "vector3.h"
 #include "model.h"
 #include "mesh.h"
@@ -55,8 +56,8 @@ void Mesh::display_contents()
 
 }
 
-Vector3 Mesh::ray_intersect( const Ray& ray)
+std::optional<Vector3> Mesh::ray_intersect( const Ray& ray)
 {
-    return {0.0f, 0.0f, 0.0f};
+    return std::optional<Vector3>();
 }
 

@@ -64,3 +64,8 @@ void normalize(Vector3& vector)
     vector.y = vector.y / magnitude;
     vector.z = vector.z / magnitude;
 }
+
+float magnitude(const Vector3& vector)
+{
+    return sqrt( (vector.x * vector.x) + (vector.y * vector.y) + (vector.z * vector.z) );
+}

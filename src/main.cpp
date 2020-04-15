@@ -2,8 +2,10 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <memory>
 
 #include "mesh.h"
+#include "sphere.h"
 #include "scene.h"
 
 int main(int argc, char** argv)
@@ -27,6 +29,8 @@ int main(int argc, char** argv)
     //model.display_contents();
 
     Scene scene(1, {1, 1, 1}, {0, 0, 0});
+
+    scene.add_model( std::make_unique<Sphere>( Sphere({0, 0, 1}, 0.50)));
     scene.render();
     return 0;
 

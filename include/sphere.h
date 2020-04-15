@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <optional>
 #include "model.h"
 
 class Sphere: public Model
@@ -10,6 +11,6 @@ class Sphere: public Model
         float radius;
     public:
         Sphere(Vector3 origin, float radius);
-        Vector3 ray_intersect(const Ray& ray);
+        std::optional<Vector3> ray_intersect(const Ray& ray);
 };
 
