@@ -19,11 +19,11 @@ Scene::Scene(int viewplane_distance, Vector3 camera_direction, Vector3 camera_or
 
 void Scene::render()
 {
-    int h_res = 50;
-    int v_res = 50;
+    int h_res = 512;
+    int v_res = 512;
 
     /** Camera view angle is 90 degrees **/
-    float camera_distance = 1.0;
+    float camera_distance = .25;
     float image_width = 2 * camera_distance * 1;
     float image_height = image_width; /** Remember not to do h_res/v_res because of issues with integer division!!! **/
 
@@ -57,7 +57,6 @@ void Scene::render()
         }
 
     }
-
     std::cout << "Camera origin: " << camera_origin << std::endl;
     std::cout << "Camera view direction: " << camera_view_dir << std::endl;
     std::cout << "Camera view up: " << camera_view_up << std::endl;
@@ -67,6 +66,9 @@ void Scene::render()
     std::cout << "Bottom left image view direction " << rays[0][511].direction << std::endl;
     std::cout << "Bottom right image view direction " << rays[511][511].direction << std::endl;
     std::cout << "Middle image view direction " << rays[255][255].direction << std::endl;
+
+
+
 
     FILE *imageFile;
 

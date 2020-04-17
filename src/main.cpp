@@ -7,6 +7,7 @@
 #include "mesh.h"
 #include "sphere.h"
 #include "scene.h"
+#include "triangle.h"
 
 int main(int argc, char** argv)
 {
@@ -30,8 +31,15 @@ int main(int argc, char** argv)
 
     Scene scene(1, {1, 1, 1}, {0, 0, 0});
 
-    scene.add_model( std::make_unique<Sphere>( Sphere({0, 0, 1}, 0.50)));
+    //scene.add_model( std::make_unique<Sphere>( Sphere({0, 0, 1}, 0.50)));
+
+    Triangle t1( {0.5f, 0.0f, 1.0f}, {-0.5f, 0.0f, 1.0f}, {0.0f, 0.5f, 1.0f});
+    
+    scene.add_model( std::make_unique<Triangle>(t1));
+
+
     scene.render();
+   
     return 0;
 
 }
