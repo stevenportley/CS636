@@ -25,18 +25,16 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    Mesh mesh(in);
-
     //model.display_contents();
 
     Scene scene(1, {1, 1, 1}, {0, 0, 0});
 
-    //scene.add_model( std::make_unique<Sphere>( Sphere({0, 0, 1}, 0.50)));
+    scene.add_model( std::make_unique<Sphere>( Sphere({1, 1, 1}, 0.50)));
 
-    Triangle t1( {0.5f, 0.0f, 1.0f}, {-0.5f, 0.0f, 1.0f}, {0.0f, 0.5f, 1.0f});
-    
+    Triangle t1( {-1.0f, 2.5f, 1.0f}, {-1.5f, 2.0f, 1.0f}, {-1.0f, 1.5f, 1.0f});
     scene.add_model( std::make_unique<Triangle>(t1));
-
+    
+    scene.add_model( std::make_unique<Mesh>(in));
 
     scene.render();
    

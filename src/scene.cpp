@@ -27,7 +27,7 @@ void Scene::render()
     float image_width = 2 * camera_distance * 1;
     float image_height = image_width; /** Remember not to do h_res/v_res because of issues with integer division!!! **/
 
-    Vector3 camera_origin = { 0, 0, 0};
+    Vector3 camera_origin = { 0, 0, -3};
     Vector3 camera_view_dir = {0, 0, 1};
     Vector3 camera_view_up = { 0, 1, 0};
     Vector3 camera_side_view = camera_view_up * camera_view_dir;
@@ -86,7 +86,7 @@ void Scene::render()
     {
         for(int v = 0; v < v_res; v++)
         {
-            if(image[h][v])
+            if(image[v][h])
                 fputc(150, imageFile);
             else
                 fputc(50, imageFile);
@@ -115,6 +115,12 @@ std::optional<Vector3> Scene::ray_trace(const Ray& ray)
             intersections.push_back(*temp);
     }
 
+    if(intersections.size() == 0)
+        return std::optional<Vector3>();
+    if(intersections.size() == 1)
+        return std::optional<Vector3>(intersections[0]);
+
+    temp = intersections[0];
     for(auto& i : intersections)
     {
         if( magnitude(i) < magnitude(*temp) )

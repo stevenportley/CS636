@@ -17,12 +17,6 @@ struct Ray
     Vector3 direction;
 };
 
-struct Face
-{
-    ssize_t v1;
-    ssize_t v2;
-    ssize_t v3;
-};
 
 Vector3 operator+(Vector3 const& lhs, Vector3 const& rhs);
 Vector3 operator+(Vector3 const& lhs, float const& rhs);
