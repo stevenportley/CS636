@@ -2,29 +2,31 @@
 #include <optional>
 #include "model.h"
 #include "triangle.h"
+#include "vector3.h"
+#include "light.h"
 
 
-
-Triangle::Triangle(Vector3 p1, Vector3 p2, Vector3 p3)
+Triangle::Triangle(ColorRGB color, Vertex A, Vertex B, Vertex C)
 {
-    this->a = p1;
-    this->b = p2;
-    this->c = p3;
+    this->A = A;
+    this->B = B;
+    this->C = C;
+    this->color = color;
 }
 
-std::optional<Vector3> Triangle::ray_intersect( const Ray& ray)
+std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources)
 {
-    float a_x = this->a.x;
-    float a_y = this->a.y;
-    float a_z = this->a.z;
+    float a_x = this->A.location.x;
+    float a_y = this->A.location.y;
+    float a_z = this->A.location.z;
 
-    float b_x = this->b.x;
-    float b_y = this->b.y;
-    float b_z = this->b.z;
+    float b_x = this->B.location.x;
+    float b_y = this->B.location.y;
+    float b_z = this->B.location.z;
 
-    float c_x = this->c.x;
-    float c_y = this->c.y;
-    float c_z = this->c.z;
+    float c_x = this->C.location.x;
+    float c_y = this->C.location.y;
+    float c_z = this->C.location.z;
 
     float r_x = ray.origin.x;
     float r_y = ray.origin.y;
@@ -52,27 +54,45 @@ std::optional<Vector3> Triangle::ray_intersect( const Ray& ray)
 
     float beta = beta_num / matrix_a;
     float gamma = gamma_num / matrix_a;
+    float alpha = 1.0f - beta - gamma;
     float t = t_num / matrix_a;
 
     if( beta <= 0)
-        return std::optional<Vector3>();
+        return std::optional<RayCollision>();
 
     if( gamma <= 0)
-        return std::optional<Vector3>();
+        return std::optional<RayCollision>();
 
     if( gamma + beta >= 1)
-        return std::optional<Vector3>();
+        return std::optional<RayCollision>();
 
     if( t <= 0)
-        return std::optional<Vector3>();
+        return std::optional<RayCollision>();
 
+    Vector3 point_normal = (alpha * this->A.normal) + (beta * this->B.normal) + (gamma * this->C.normal);
+    normalize(point_normal);
+
+    /** We have a collision!! **/
     Vector3 intersection = { 
         ray.origin.x + t*ray.direction.x,
         ray.origin.y + t*ray.direction.y,
         ray.origin.z + t*ray.direction.z,
     };
 
-    return std::optional<Vector3>(intersection);
+    ColorRGB color = calculate_light(this->color, ray.origin, intersection, point_normal, light_sources);
+
+
+    RayCollision ray_collision = {
+        .color = color,
+        .location = intersection,
+        .normal = point_normal,
+        .source_location = ray.origin
+    };
+
+
+    return std::optional<RayCollision>(ray_collision);
 
 
 }
+
+

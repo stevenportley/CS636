@@ -50,6 +50,11 @@ Vector3 operator*(float const& lhs, Vector3 const& rhs)
     return { rhs.x * lhs, rhs.y * lhs, rhs.z * lhs};
 }
 
+float dot_product(Vector3 const& lhs, Vector3 const& rhs)
+{
+    return ( (lhs.x*rhs.x) + (lhs.y*rhs.y) + (lhs.z*rhs.z) );
+}
+
 std::ostream& operator<<(std::ostream& os, Vector3 const& rhs)
 {
     os << "[" << rhs.x << " " << rhs.y << " " << rhs.z << "]";

@@ -10,8 +10,13 @@
 #include "triangle.h"
 
 
-Mesh::Mesh(std::ifstream& model_file)
+Mesh::Mesh(std::ifstream& model_file, ColorRGB color)
 {
+
+    std::cout << "Processing new model file." << std::endl;
+
+    std::vector<Vector3> vectors;
+    std::vector<int> vertex_count; /** Indicies for vectors/normals/count all match **/
 
     std::string str;
     while(std::getline(model_file, str))
@@ -29,7 +34,7 @@ Mesh::Mesh(std::ifstream& model_file)
                 float p2 = std::stof(subs);
                 iss >> subs;
                 float p3 = std::stof(subs);
-                this->vertices.push_back( {p1, p2, p3} );
+                vectors.push_back( {p1, p2, p3} );
             }else if( subs == "f" )
             {
                 iss >> subs;
@@ -42,11 +47,60 @@ Mesh::Mesh(std::ifstream& model_file)
                this->faces.push_back( {p1, p2, p3} );
         }
     }
+
+    for(int i = 0; i < vectors.size(); i++)
+    {   
+        
+        int count = 0;
+        std::vector<Vector3> temp_normals;
+        for(auto& face : this->faces)
+        {
+            if(face.p1 == i || face.p2 == i || face.p3 == i)    /** vertex i is a part of this face **/
+            {
+                /** Calculate the normal of face i and add it to the list of normals **/
+                Vector3 A, B, C;
+                A = vectors[ face.p1 ];
+                B = vectors[ face.p2 ];
+                C = vectors[ face.p3 ];
+
+
+                Vector3 this_normal = (B - A) * (C - A);
+                normalize(this_normal);
+                temp_normals.push_back(this_normal);
+                count++;
+
+            }
+        }
+
+        Vector3 averaged_normal = {0, 0, 0};
+        for(auto& normal : temp_normals)
+        {
+            averaged_normal = averaged_normal + normal;
+        }
+
+        averaged_normal = averaged_normal / count;
+        normalize(averaged_normal);
+        this->normals.push_back(averaged_normal);
+
+    }
+
+
+    for(int i = 0; i < vectors.size(); i++)
+    {
+        this->vertices.push_back( {vectors[i], this->normals[i]} );
+    }
+
+    this->color = color;
+
+    std::cout << "Finished loading model " << std::endl;
+
+
 }
 
 
 void Mesh::display_contents()
 {
+    /**
     for( auto face : faces)
     {
         std::cout << "Face:\n";
@@ -55,33 +109,41 @@ void Mesh::display_contents()
         std::cout << vertices[face.p3].x << " " << vertices[face.p3].y << " " << vertices[face.p3].z << std::endl;
         std::cout << std::endl;
     }
+    **/
 
 }
 
-std::optional<Vector3> Mesh::ray_intersect( const Ray& ray)
+std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources)
 {
 
-    std::vector<Vector3> collisions;
-
+    std::vector<RayCollision> collisions;
     for(auto& face : this->faces)
     {
-        Triangle t( this->vertices[face.p1], this->vertices[face.p2], this->vertices[face.p3] );
+        Triangle t( this->color, this->vertices[face.p1], this->vertices[face.p2], this->vertices[face.p3]);
         
-        std::optional<Vector3> tri_intersect = t.ray_intersect(ray);
+        std::optional<RayCollision> tri_intersect = t.ray_intersect(ray, light_sources);
         if(tri_intersect)
             collisions.push_back(*tri_intersect);
 
     }
 
     if(collisions.size() == 0)
-        return std::optional<Vector3>();
+        return std::optional<RayCollision>();
 
 
     if(collisions.size() == 1)
-        return std::optional<Vector3>(collisions[0]);
+        return std::optional<RayCollision>(collisions[0]);
 
 
     /** We have collided with mesh more than one time **/
-    return std::optional<Vector3>(collisions[0]); //Later figure out which one we have collided with
+    RayCollision temp = collisions[0];
+    for(auto& collision : collisions)
+    {
+        if( magnitude(collision.location - ray.origin) < magnitude(temp.location - ray.origin)  )
+            temp = collision;
+
+    }
+
+    return std::optional<RayCollision>(temp); 
 }
 

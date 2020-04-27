@@ -1,18 +1,21 @@
+#include "vector3.h"
+#include "model.h"
 #include "sphere.h"
 
-Sphere::Sphere(Vector3 origin, float radius)
+Sphere::Sphere(Vector3 origin, float radius, ColorRGB color)
 {
     this->origin = origin;
     this->radius = radius;
+    this->color = color;
 }
 
-std::optional<Vector3> Sphere::ray_intersect(const Ray& ray)
-{
 
+
+std::optional<RayCollision> Sphere::ray_intersect(const Ray& ray, const std::vector<LightSource>& light_sources)
+{
 
     // d is ray
     // c is sphere
-
     float x_d = ray.direction.x;
     float y_d = ray.direction.y;
     float z_d = ray.direction.z;
@@ -39,17 +42,48 @@ std::optional<Vector3> Sphere::ray_intersect(const Ray& ray)
     float discriminant = (B * B) - (4 * C);
 
     if(discriminant < 0)
-        return std::optional<Vector3>();
+        return std::optional<RayCollision>();
 
-    float t_o = ((-1 * B) - discriminant) / 2;
+    bool is_ray_inside_sphere = false;
+    float t_0 = ((-1 * B) - discriminant) / 2;
+    float t_1 = ((-1 * B) + discriminant) / 2;
 
-    Vector3 output;
-    output.x = x_o + (x_d * t_o);
-    output.y = y_o + (y_d * t_o);
-    output.z = z_o + (z_d * t_o);
+    Vector3 intersection;
+    Vector3 surface_normal;
+    if(t_0 > 0) 
+    {
+        /** t_0 is first point hit **/
+        intersection.x = x_o + (x_d * t_0);
+        intersection.y = y_o + (y_d * t_0);
+        intersection.z = z_o + (z_d * t_0);
+        surface_normal = intersection - this->origin;
+        normalize(surface_normal);
+    }else if(t_1 > 0)
+    {
+        /** t_1 is first point hit, we are inside sphere **/
+        intersection.x = x_o + (x_d * t_1);
+        intersection.y = y_o + (y_d * t_1);
+        intersection.z = z_o + (z_d * t_1);
+        surface_normal = intersection - this->origin;
+        surface_normal = surface_normal * -1;
+        normalize(surface_normal);
+    }else{
+        /** Sphere is behind us **/
+        return std::optional<RayCollision>();
+    }
 
-    return std::optional<Vector3>( output );
+    ColorRGB color = calculate_light(this->color, ray.origin, intersection, surface_normal, light_sources);
 
+    //Vector3 surface_normal = 
+    RayCollision output =
+    {
+        .color = color,
+        .location = intersection,
+        .normal = surface_normal,
+        .source_location = ray.origin
+    };
+
+    return std::optional<RayCollision>(output);
 
 }
 

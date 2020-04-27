@@ -5,20 +5,29 @@
 #include <memory>
 #include "model.h"
 
+#define VRES 1024
+#define HRES 1024
+
+
 class Scene
 {
     private:
-        std::vector<std::unique_ptr<Model>> models;
+        std::vector<Model*> models;
+        std::vector<LightSource> light_sources;
         Vector3 camera_origin;
         Vector3 camera_direction;
-        int viewplane_distance;
-        std::optional<Vector3> ray_trace(const Ray& ray);
+        Vector3 camera_view_up_directon;
+        float viewplane_distance;
+        std::optional<ColorRGB> ray_trace(const Ray& ray);
+
 
     public:
-        Scene(int viewplane_distance,
+        Scene(float viewplane_distance,
                 Vector3 camera_direction,
+                Vector3 camera_view_up_direction,
                 Vector3 camera_origin);
-        void add_model(std::unique_ptr<Model> new_model);
+        void add_model(Model* new_model);
+        void add_light(LightSource& new_light);
         void render();
         
 };
