@@ -50,7 +50,6 @@ ColorRGB calculate_light(ColorRGB model_color, Vector3 view_origin, Vector3 inte
 
     return color;
 
-
 }
 
 

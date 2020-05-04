@@ -69,6 +69,7 @@ int main(int argc, char** argv)
     scene.add_light( light2 );
 
     scene.render();
+
    
     return 0;
 
