@@ -3,6 +3,7 @@
 #include <optional>
 #include <vector>
 #include "model.h"
+#include "boundingbox.h"
 
 struct Face
 {
@@ -18,6 +19,7 @@ class Mesh: public Model
     private:
         std::vector<Face> faces; /** a face is defined as 3 indicies into the vertices vector **/
         std::vector<Vertex> vertices;
+        BoundingBox bounding_box;
         ColorRGB color;
         /** Put in a ref count later, shared ptr? **/
         std::vector<Vector3> normals;

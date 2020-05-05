@@ -8,7 +8,7 @@
 #include "mesh.h"
 #include "scene.h"
 #include "light.h"
-
+#include "boundingbox.h"
 
 std::optional<float> ray_trace(const Ray& ray);
 void write_file(ColorRGB** image, ssize_t width, ssize_t height);

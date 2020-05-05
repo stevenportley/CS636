@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     }
     //model.display_contents();
     Vector3 camera_direction = {1.0f, 0.0f, 0.0f};
-    Vector3 camera_origin = {-1.5f, -0.5f, 1.0f};
+    Vector3 camera_origin = {-1.0f, 0.0f, 0.0f};
     Vector3 camera_view_up_direction = {0.0f, 1.0f, 0.0f};
     Scene scene(0.10f, camera_direction, camera_view_up_direction, camera_origin);
 

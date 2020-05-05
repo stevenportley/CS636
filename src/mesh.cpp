@@ -8,9 +8,11 @@
 #include "model.h"
 #include "mesh.h"
 #include "triangle.h"
+#include "boundingbox.h"
 
+static BoundingBox generate_box(const std::vector<Vertex>& vertices);
 
-Mesh::Mesh(std::ifstream& model_file, ColorRGB color)
+Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
 {
 
     std::cout << "Processing new model file." << std::endl;
@@ -84,15 +86,44 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color)
 
     }
 
-
     for(int i = 0; i < vectors.size(); i++)
     {
         this->vertices.push_back( {vectors[i], this->normals[i]} );
     }
 
-    this->color = color;
+
+    Vector3 min = vertices[0].location;
+    Vector3 max = vertices[0].location;
+
+    for(auto& vertex : vertices)
+    {
+        if(vertex.location.x < min.x)
+            min.x = vertex.location.x;
+
+        if(vertex.location.x > max.x)
+            max.x = vertex.location.x;
+
+        if(vertex.location.y < min.y)
+            min.y = vertex.location.y;
+
+        if(vertex.location.y > max.y)
+            max.y = vertex.location.y;
+
+        if(vertex.location.z < min.z)
+            min.z = vertex.location.z;
+
+        if(vertex.location.z > max.z)
+            max.z = vertex.location.z;
+
+    }
+
+    BoundingBox box(min, max);
+
+    this->bounding_box = box;
+
 
     std::cout << "Finished loading model " << std::endl;
+    std::cout << "Bounding box: [" << min.x << min.y << min.z << "] [" << max.x << max.y << max.z << "]" << std::endl;
 
 }
 
@@ -114,6 +145,10 @@ void Mesh::display_contents()
 
 std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources)
 {
+
+    /** Miss bounding box, early drop out **/
+    if(!(this->bounding_box.does_intersect(ray)))
+        return std::optional<RayCollision>();
 
     std::vector<RayCollision> collisions;
     for(auto& face : this->faces)
@@ -144,5 +179,41 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray, const std::vect
     }
 
     return std::optional<RayCollision>(temp); 
+}
+
+
+
+BoundingBox generate_box(const std::vector<Vertex>& vertices)
+{
+
+    Vector3 min = vertices[0].location;
+    Vector3 max = vertices[0].location;
+
+    for(auto& vertex : vertices)
+    {
+        if(vertex.location.x < min.x)
+            min.x = vertex.location.x;
+
+        if(vertex.location.x > max.x)
+            max.x = vertex.location.x;
+
+        if(vertex.location.y < min.y)
+            min.y = vertex.location.y;
+
+        if(vertex.location.y > max.y)
+            max.y = vertex.location.y;
+
+        if(vertex.location.z < min.z)
+            min.z = vertex.location.z;
+
+        if(vertex.location.z > max.z)
+            max.z = vertex.location.z;
+
+    }
+
+    BoundingBox box(min, max);
+
+    return box;
+
 }
 
