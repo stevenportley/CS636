@@ -91,6 +91,8 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
         this->vertices.push_back( {vectors[i], this->normals[i]} );
     }
 
+    this->color = color;
+
 
     Vector3 min = vertices[0].location;
     Vector3 max = vertices[0].location;
@@ -116,6 +118,8 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
             max.z = vertex.location.z;
 
     }
+
+
 
     BoundingBox box(min, max);
 
@@ -148,7 +152,11 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray, const std::vect
 
     /** Miss bounding box, early drop out **/
     if(!(this->bounding_box.does_intersect(ray)))
+    {
         return std::optional<RayCollision>();
+    }
+
+
 
     std::vector<RayCollision> collisions;
     for(auto& face : this->faces)
