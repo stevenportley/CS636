@@ -34,7 +34,7 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color)
                 float p2 = std::stof(subs);
                 iss >> subs;
                 float p3 = std::stof(subs);
-                vectors.push_back( {p1, p2, p3} );
+                vectors.push_back( { p1, p2, p3} );
             }else if( subs == "f" )
             {
                 iss >> subs;
@@ -44,7 +44,7 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color)
                 iss >> subs;
                 int p3 = std::stoi(subs) - 1;
                 //faces.push_back( {p1, p2, p3});
-               this->faces.push_back( {p1, p2, p3} );
+               this->faces.push_back( { static_cast<size_t>(p1), static_cast<size_t>(p2), static_cast<size_t>(p3)} );
         }
     }
 
@@ -93,7 +93,6 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color)
     this->color = color;
 
     std::cout << "Finished loading model " << std::endl;
-
 
 }
 
