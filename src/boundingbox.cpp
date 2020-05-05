@@ -69,8 +69,8 @@ bool BoundingBox::does_intersect(const Ray& ray)
 
     auto swap = [](float& a, float& b){
         float temp = a;
-        b = a;
-        a = temp;
+        a = b;
+        b = temp;
     };
 
    /** initalize near and far to x **/

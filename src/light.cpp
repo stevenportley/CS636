@@ -8,7 +8,7 @@
 ColorRGB calculate_light(ColorRGB model_color, Vector3 view_origin, Vector3 intersection, Vector3 normal, const std::vector<LightSource>& light_sources)
 {
 
-    ColorRGB ia = {0.25, 0.25, 0.25};
+    ColorRGB ia = {0.35, 0.35, 0.35};
 
     ColorRGB total_intensity = {0.0f, 0.0f, 0.0f};
     for( auto& light : light_sources)

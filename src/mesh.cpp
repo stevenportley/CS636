@@ -10,7 +10,6 @@
 #include "triangle.h"
 #include "boundingbox.h"
 
-static BoundingBox generate_box(const std::vector<Vertex>& vertices);
 
 Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
 {
@@ -91,6 +90,8 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
         this->vertices.push_back( {vectors[i], this->normals[i]} );
     }
 
+    this->color = color;
+
 
     Vector3 min = vertices[0].location;
     Vector3 max = vertices[0].location;
@@ -116,6 +117,8 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
             max.z = vertex.location.z;
 
     }
+
+
 
     BoundingBox box(min, max);
 
@@ -148,7 +151,12 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray, const std::vect
 
     /** Miss bounding box, early drop out **/
     if(!(this->bounding_box.does_intersect(ray)))
+    {
         return std::optional<RayCollision>();
+    }
+
+
+
 
     std::vector<RayCollision> collisions;
     for(auto& face : this->faces)
@@ -183,13 +191,13 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray, const std::vect
 
 
 
-BoundingBox generate_box(const std::vector<Vertex>& vertices)
+BoundingBox Mesh::generate_boundingbox()
 {
 
-    Vector3 min = vertices[0].location;
-    Vector3 max = vertices[0].location;
+    Vector3 min = this->vertices[0].location;
+    Vector3 max = this->vertices[0].location;
 
-    for(auto& vertex : vertices)
+    for(auto& vertex : this->vertices)
     {
         if(vertex.location.x < min.x)
             min.x = vertex.location.x;
@@ -216,4 +224,18 @@ BoundingBox generate_box(const std::vector<Vertex>& vertices)
     return box;
 
 }
+
+Vector3 Mesh::get_centroid()
+{
+    Vector3 centroids_sum = { 0.0f, 0.0f, 0.0f};
+    for(auto& vertex : this->vertices)
+    {
+        centroids_sum = centroids_sum + vertex.location;
+    }
+
+    return centroids_sum / this->vertices.size();
+
+}
+
+
 

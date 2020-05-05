@@ -6,8 +6,8 @@
 
 #define KD 0.6f     /** Diffuse surface reflectance coefficient **/
 #define KS 0.6f     /** Specular surface reflectance coefficient **/
-#define KA 0.2f     /** Ambient surface reflectance coefficeint **/
-#define IA 0.15f
+#define KA 0.8f     /** Ambient surface reflectance coefficeint **/
+#define IA 0.35f
 #define SHININESS 30
 
 

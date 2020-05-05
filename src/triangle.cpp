@@ -96,3 +96,68 @@ std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray, const std::
 }
 
 
+BoundingBox Triangle::generate_boundingbox()
+{
+    auto max = [](float a, float b, float c)
+    {
+        if(a > b)
+            if(a > c)
+                return a;
+            else
+                return c;
+        else
+            if(b > c)
+                return b;
+            else
+                return c;
+    };
+
+    auto min = [](float a, float b, float c)
+    {
+        if(a < b)
+            if(a < c)
+                return a;
+            else
+                return c;
+        else
+            if(b < c)
+                return b;
+            else
+                return c;
+    };
+
+
+    Vector3 p1 = { min(this->A.location.x, this->B.location.x, this->C.location.x),
+                    min(this->A.location.y, this->B.location.y, this->C.location.y),
+                    min(this->A.location.z, this->B.location.z, this->C.location.z) };
+
+    Vector3 p2 = { max(this->A.location.x, this->B.location.x, this->C.location.x),
+                    max(this->A.location.y, this->B.location.y, this->C.location.y),
+                    max(this->A.location.z, this->B.location.z, this->C.location.z) };
+
+
+    return {p1, p2};
+        
+}
+
+Vector3 Triangle::get_centroid()
+{
+
+    return { (this->A.location.x + this->B.location.x + this->C.location.x) / 3,
+             (this->A.location.y + this->B.location.y + this->C.location.y) / 3,
+             (this->A.location.z + this->B.location.z + this->C.location.z) / 3};
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

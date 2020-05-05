@@ -2,7 +2,9 @@
 #pragma once
 
 #include <optional>
+#include "vector3.h"
 #include "model.h"
+#include "boundingbox.h"
 
 class Sphere: public Model
 {
@@ -13,5 +15,6 @@ class Sphere: public Model
     public:
         Sphere(Vector3 origin, float radius, ColorRGB color);
         std::optional<RayCollision> ray_intersect(const Ray& ray, const std::vector<LightSource>& light_sources);
+        BoundingBox generate_boundingbox();
 };
 

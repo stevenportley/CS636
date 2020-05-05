@@ -20,8 +20,8 @@ int main(int argc, char** argv)
         return -1;
     }
     //model.display_contents();
-    Vector3 camera_direction = {1.0f, 0.0f, 0.0f};
-    Vector3 camera_origin = {-1.0f, 0.0f, 0.0f};
+    Vector3 camera_direction = {-1.0f, -1.0f, -1.0f};
+    Vector3 camera_origin = {3.0f, 3.0f, 3.0f};
     Vector3 camera_view_up_direction = {0.0f, 1.0f, 0.0f};
     Scene scene(0.10f, camera_direction, camera_view_up_direction, camera_origin);
 
@@ -62,9 +62,9 @@ int main(int argc, char** argv)
     scene.add_model( &mesh );
 **/
     Vector3 light_location = {-3.5, 1.5f, -1.5f};
-    Vector3 light_location2 = {-3.5, -1.25f, 1.50f};
-    LightSource light = {light_location, {0.80, 0.0, 0.0}};
-    LightSource light2 = {light_location2, {0.00, 0.0, 0.80}};
+    Vector3 light_location2 = {3.5, -1.25f, 1.50f};
+    LightSource light = {light_location, {0.80, 0.80, 0.80}};
+    LightSource light2 = {light_location2, {0.80, 0.80, 0.80}};
     scene.add_light( light );
     scene.add_light( light2 );
 
