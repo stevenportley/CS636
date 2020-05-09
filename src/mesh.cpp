@@ -155,9 +155,6 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray, const std::vect
         return std::optional<RayCollision>();
     }
 
-
-
-
     std::vector<RayCollision> collisions;
     for(auto& face : this->faces)
     {
