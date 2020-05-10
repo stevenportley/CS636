@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <vector>
+#include <memory>
 #include "vector3.h"
 #include "model.h"
 
@@ -15,6 +16,7 @@ public:
 public:
     bool does_intersect(const Ray& ray);
     BoundingBox(Vector3 p1, Vector3 p2);
-    BoundingBox(const std::vector<BoundingBox>& boxes);
 
 };
+
+BoundingBox generate_boundingbox(const std::vector<std::shared_ptr<BoundingBox>>& boxes);

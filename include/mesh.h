@@ -26,7 +26,7 @@ class Mesh: public Model
         
     public:
         Mesh( std::ifstream& mesh_file, ColorRGB color );
-        BoundingBox generate_boundingbox();
+        BoundingBox get_boundingbox();
         Vector3 get_centroid();
         std::optional<RayCollision> ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources);
         void display_contents();

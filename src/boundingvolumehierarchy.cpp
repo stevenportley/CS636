@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <optional>
 #include "model.h"
 #include "boundingbox.h"
 #include "boundingvolumehierarchy.h"
@@ -13,12 +14,16 @@ BoundingVolumeHierarchy::BoundingVolumeHierarchy( std::vector<std::shared_ptr<Mo
 {
     for(auto& model : models)
     {
-        this->bounding_boxes.push_back( std::make_shared<BoundingBox>(model->generate_boundingbox()) );
         this->model_list.push_back(model);
+        temp.push_back(*model);
     }
+
+    this->boundingbox = generate_boundingbox(temp);
+
 
     this->divide_hierarchies(current_depth, sort_axis);
 }
+
 
 
 void BoundingVolumeHierarchy::divide_hierarchies(int current_depth, int sort_axis)
@@ -28,13 +33,13 @@ void BoundingVolumeHierarchy::divide_hierarchies(int current_depth, int sort_axi
     auto model_compare_y = [](std::shared_ptr<Model> a, std::shared_ptr<Model> b) { return a->get_centroid().y < b->get_centroid().y; };
     auto model_compare_z = [](std::shared_ptr<Model> a, std::shared_ptr<Model> b) { return a->get_centroid().z < b->get_centroid().z; };
 
-    std::vector<BoundingBox> bounding_box_list;
+    std::vector<std::shared_ptr<BoundingBox>> bounding_box_list;
     for(auto& model : model_list)
     {
-        bounding_box_list.push_back(model->generate_boundingbox());
+        bounding_box_list.push_back(std::make_shared<BoundingBox>(model->get_boundingbox());
     }
 
-    BoundingBox bounding_box(bounding_box_list);
+    BoundingBox bounding_box = generate_boundingbox(bounding_box_list);
 
     if(model_list.size() < NUM_MODELS_THRESHOLD)
         return;
@@ -69,6 +74,25 @@ void BoundingVolumeHierarchy::divide_hierarchies(int current_depth, int sort_axi
     return;
 }
 
+
+BoundingBox BoundingVolumeHierarchy::get_boundingbox()
+{
+
+    return this->boundingbox;
+}
+
+Vector3 BoundingVolumeHierarchy::get_centroid()
+{
+    return {};
+}
+
+
+
+std::optional<RayCollision> BoundingVolumeHierarchy::ray_intersect(const Ray& ray, const std::vector<LightSource>& light_sources)
+{
+    return std::optional<RayCollision>();
+
+}
 
 
 

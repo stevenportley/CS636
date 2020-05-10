@@ -131,6 +131,12 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
 }
 
 
+BoundingxBox Mesh::get_boundingbox()
+{
+    return this->boundingbox;
+}
+
+
 void Mesh::display_contents()
 {
     /**
@@ -186,41 +192,6 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray, const std::vect
     return std::optional<RayCollision>(temp); 
 }
 
-
-
-BoundingBox Mesh::generate_boundingbox()
-{
-
-    Vector3 min = this->vertices[0].location;
-    Vector3 max = this->vertices[0].location;
-
-    for(auto& vertex : this->vertices)
-    {
-        if(vertex.location.x < min.x)
-            min.x = vertex.location.x;
-
-        if(vertex.location.x > max.x)
-            max.x = vertex.location.x;
-
-        if(vertex.location.y < min.y)
-            min.y = vertex.location.y;
-
-        if(vertex.location.y > max.y)
-            max.y = vertex.location.y;
-
-        if(vertex.location.z < min.z)
-            min.z = vertex.location.z;
-
-        if(vertex.location.z > max.z)
-            max.z = vertex.location.z;
-
-    }
-
-    BoundingBox box(min, max);
-
-    return box;
-
-}
 
 Vector3 Mesh::get_centroid()
 {
