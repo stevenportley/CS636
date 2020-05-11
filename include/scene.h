@@ -5,8 +5,8 @@
 #include <memory>
 #include "model.h"
 
-#define VRES 256
-#define HRES 256
+#define VRES 1024
+#define HRES 1024
 
 
 class Scene

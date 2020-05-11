@@ -1,9 +1,9 @@
 #include <optional>
 #include <vector>
 #include <iostream>
-#include <vector3.h>
-#include "model.h"
+#include "vector3.h"
 #include "boundingbox.h"
+#include "model.h"
 
 BoundingBox::BoundingBox(Vector3 p1, Vector3 p2)
 {
@@ -117,6 +117,21 @@ BoundingBox generate_boundingbox(const std::vector<std::shared_ptr<BoundingBox>>
     BoundingBox box(p1, p2);
 
     return box;
+}
+
+
+BoundingBox generate_boundingbox(const std::vector<std::shared_ptr<Model>>& models)
+{
+    std::vector<std::shared_ptr<BoundingBox>> boxes;
+    for(auto& model : models)
+    {
+        boxes.push_back( std::make_shared<BoundingBox>(model->get_boundingbox()));
+    }
+
+
+    return generate_boundingbox(boxes);
+          
+
 }
 
 

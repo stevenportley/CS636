@@ -3,25 +3,17 @@
 #include <memory>
 #include <algorithm>
 #include <optional>
-#include "model.h"
-#include "boundingbox.h"
 #include "boundingvolumehierarchy.h"
 
-#define BOUND_MAX_DEPTH 3
+#define BOUND_MAX_DEPTH 5
 #define NUM_MODELS_THRESHOLD 10
 
-BoundingVolumeHierarchy::BoundingVolumeHierarchy( std::vector<std::shared_ptr<Model>>& models, int current_depth, int sort_axis)
+BoundingVolumeHierarchy::BoundingVolumeHierarchy( std::vector<std::shared_ptr<Model>>& models, int current_depth, int sort_axis) : bounding_box( {}, {} )
 {
-    for(auto& model : models)
-    {
-        this->model_list.push_back(model);
-        temp.push_back(*model);
-    }
-
-    this->boundingbox = generate_boundingbox(temp);
-
-
-    this->divide_hierarchies(current_depth, sort_axis);
+    this->model_list = models;
+    this->bounding_box = generate_boundingbox(models);
+    if(current_depth < BOUND_MAX_DEPTH)
+        this->divide_hierarchies(current_depth, sort_axis);
 }
 
 
@@ -33,13 +25,6 @@ void BoundingVolumeHierarchy::divide_hierarchies(int current_depth, int sort_axi
     auto model_compare_y = [](std::shared_ptr<Model> a, std::shared_ptr<Model> b) { return a->get_centroid().y < b->get_centroid().y; };
     auto model_compare_z = [](std::shared_ptr<Model> a, std::shared_ptr<Model> b) { return a->get_centroid().z < b->get_centroid().z; };
 
-    std::vector<std::shared_ptr<BoundingBox>> bounding_box_list;
-    for(auto& model : model_list)
-    {
-        bounding_box_list.push_back(std::make_shared<BoundingBox>(model->get_boundingbox());
-    }
-
-    BoundingBox bounding_box = generate_boundingbox(bounding_box_list);
 
     if(model_list.size() < NUM_MODELS_THRESHOLD)
         return;
@@ -63,7 +48,7 @@ void BoundingVolumeHierarchy::divide_hierarchies(int current_depth, int sort_axi
     /** Split vector into 2 **/
     std::size_t const half_size = this->model_list.size() / 2;
     std::vector<std::shared_ptr<Model>> vec1(model_list.begin(), model_list.begin() + half_size);
-    std::vector<std::shared_ptr<Model>> vec2(model_list.begin() + half_size, model_list.begin());
+    std::vector<std::shared_ptr<Model>> vec2(model_list.begin() + half_size, model_list.end());
     
     BoundingVolumeHierarchy b1( vec1, current_depth+1, sort_axis+1 );
     BoundingVolumeHierarchy b2( vec2, current_depth+1, sort_axis+1 );
@@ -77,8 +62,7 @@ void BoundingVolumeHierarchy::divide_hierarchies(int current_depth, int sort_axi
 
 BoundingBox BoundingVolumeHierarchy::get_boundingbox()
 {
-
-    return this->boundingbox;
+    return this->bounding_box;
 }
 
 Vector3 BoundingVolumeHierarchy::get_centroid()
@@ -90,8 +74,46 @@ Vector3 BoundingVolumeHierarchy::get_centroid()
 
 std::optional<RayCollision> BoundingVolumeHierarchy::ray_intersect(const Ray& ray, const std::vector<LightSource>& light_sources)
 {
-    return std::optional<RayCollision>();
 
+    if( ! this->get_boundingbox().does_intersect(ray) )
+        return std::optional<RayCollision>();
+
+    std::optional<RayCollision> temp;
+    if(sub_hierarchies.size() == 0)
+    {
+        /** We have no subhierarchies (hit limit), so we just check all meshes here **/
+        
+        std::optional<RayCollision> temp2;
+        for( auto& model : model_list)
+        {
+            if(temp2 = model->ray_intersect(ray, light_sources))
+            {
+                /** If this model is a collision **/
+                if(!temp)
+                {
+                    temp = temp2;
+                }else
+                {
+                    if( magnitude(temp2->location - temp2->source_location) < magnitude(temp->location - temp->source_location) )
+                    {
+                        /** If this collision is closer than temp **/
+                        temp = temp2;
+
+                    }
+                }
+            }
+        }
+        return temp;
+    }
+
+    for( auto& sub_hierarchy : this->sub_hierarchies)
+    {
+        if( temp = sub_hierarchy.ray_intersect(ray, light_sources) )
+        
+            return temp;
+    }
+
+    return std::optional<RayCollision>();
 }
 
 

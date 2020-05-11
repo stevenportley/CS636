@@ -6,12 +6,53 @@
 #include "light.h"
 
 
-Triangle::Triangle(ColorRGB color, Vertex A, Vertex B, Vertex C)
+Triangle::Triangle(ColorRGB color, Vertex A, Vertex B, Vertex C) : bounding_box( {},{} )
 {
     this->A = A;
     this->B = B;
     this->C = C;
     this->color = color;
+
+    auto max = [](float a, float b, float c)
+    {
+        if(a > b)
+            if(a > c)
+                return a;
+            else
+                return c;
+        else
+            if(b > c)
+                return b;
+            else
+                return c;
+    };
+
+    auto min = [](float a, float b, float c)
+    {
+        if(a < b)
+            if(a < c)
+                return a;
+            else
+                return c;
+        else
+            if(b < c)
+                return b;
+            else
+                return c;
+    };
+
+
+    Vector3 p1 = { min(this->A.location.x, this->B.location.x, this->C.location.x),
+                    min(this->A.location.y, this->B.location.y, this->C.location.y),
+                    min(this->A.location.z, this->B.location.z, this->C.location.z) };
+
+    Vector3 p2 = { max(this->A.location.x, this->B.location.x, this->C.location.x),
+                    max(this->A.location.y, this->B.location.y, this->C.location.y),
+                    max(this->A.location.z, this->B.location.z, this->C.location.z) };
+
+    this->bounding_box = {p1, p2};
+
+
 }
 
 std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources)
@@ -41,11 +82,6 @@ std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray, const std::
         return a*( (e*i) - f*h) - b*( d*i - f*g) + c*(d*h - e*g);
     };
 
-/**
-    float matrix_a = (((a_x - b_x) * (a_y - c_y) * d_z) - ((a_x - b_x) * d_y * (a_z - c_z))) -
-                    (((a_x - c_x) * d_y * (a_z - b_z)) - ((a_x - c_x) * (a_y - b_y) * d_z)) +
-                    ((d_x * (a_y - b_y) * (a_z - c_z)) - ( d_x * (a_y - c_y) * (a_z - b_z)));
-**/
 
     float matrix_a = determinant(a_x-b_x, a_x-c_x, d_x, a_y-b_y, a_y-c_y, d_y, a_z-b_z, a_z-c_z, d_z );
     float beta_num = determinant( a_x-r_x, a_x-c_x, d_x, a_y-r_y, a_y-c_y, d_y, a_z-r_z, a_z-c_z, d_z  );
@@ -96,48 +132,9 @@ std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray, const std::
 }
 
 
-BoundingBox Triangle::generate_boundingbox()
+BoundingBox Triangle::get_boundingbox()
 {
-    auto max = [](float a, float b, float c)
-    {
-        if(a > b)
-            if(a > c)
-                return a;
-            else
-                return c;
-        else
-            if(b > c)
-                return b;
-            else
-                return c;
-    };
-
-    auto min = [](float a, float b, float c)
-    {
-        if(a < b)
-            if(a < c)
-                return a;
-            else
-                return c;
-        else
-            if(b < c)
-                return b;
-            else
-                return c;
-    };
-
-
-    Vector3 p1 = { min(this->A.location.x, this->B.location.x, this->C.location.x),
-                    min(this->A.location.y, this->B.location.y, this->C.location.y),
-                    min(this->A.location.z, this->B.location.z, this->C.location.z) };
-
-    Vector3 p2 = { max(this->A.location.x, this->B.location.x, this->C.location.x),
-                    max(this->A.location.y, this->B.location.y, this->C.location.y),
-                    max(this->A.location.z, this->B.location.z, this->C.location.z) };
-
-
-    return {p1, p2};
-        
+    return this->bounding_box;
 }
 
 Vector3 Triangle::get_centroid()

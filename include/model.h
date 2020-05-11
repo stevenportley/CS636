@@ -1,5 +1,7 @@
 #pragma once
 
+class Model;
+
 #include <vector>
 #include <fstream>
 #include <iostream>
@@ -22,8 +24,6 @@ struct RayCollision
 };
 
 class Model{
-    private:
-        BoundingBox bounding_box;
     public:
         virtual std::optional<RayCollision> ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources) = 0;
         virtual BoundingBox get_boundingbox() = 0;

@@ -1,10 +1,11 @@
 #pragma once
 
+
+
 #include <optional>
 #include <vector>
 #include <memory>
 #include "vector3.h"
-#include "model.h"
 
 class BoundingBox 
 {
@@ -19,4 +20,7 @@ public:
 
 };
 
+#include "model.h"
+
 BoundingBox generate_boundingbox(const std::vector<std::shared_ptr<BoundingBox>>& boxes);
+BoundingBox generate_boundingbox(const std::vector<std::shared_ptr<Model>>& models);

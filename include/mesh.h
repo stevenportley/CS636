@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <vector>
+#include <memory>
 #include "model.h"
 #include "boundingbox.h"
 
@@ -29,5 +30,6 @@ class Mesh: public Model
         BoundingBox get_boundingbox();
         Vector3 get_centroid();
         std::optional<RayCollision> ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources);
+        std::vector<std::shared_ptr<Model>> get_triangles();
         void display_contents();
 };

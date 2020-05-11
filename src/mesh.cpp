@@ -131,9 +131,9 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
 }
 
 
-BoundingxBox Mesh::get_boundingbox()
+BoundingBox Mesh::get_boundingbox()
 {
-    return this->boundingbox;
+    return this->bounding_box;
 }
 
 
@@ -190,6 +190,19 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray, const std::vect
     }
 
     return std::optional<RayCollision>(temp); 
+}
+
+std::vector<std::shared_ptr<Model>> Mesh::get_triangles()
+{
+    std::vector<std::shared_ptr<Model>> output;
+
+    for(auto& face: this->faces)
+    {
+        output.push_back( std::make_shared<Triangle>(this->color, this->vertices[face.p1], this->vertices[face.p2], this->vertices[face.p3]) );
+    }
+
+    return output;
+
 }
 
 

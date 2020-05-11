@@ -1,19 +1,32 @@
+#include <cmath>
 #include "vector3.h"
 #include "model.h"
 #include "sphere.h"
 
-Sphere::Sphere(Vector3 origin, float radius, ColorRGB color)
+Sphere::Sphere(Vector3 origin, float radius, ColorRGB color) : bounding_box( {}, {})
 {
     this->origin = origin;
     this->radius = radius;
     this->color = color;
+
+    Vector3 p1 = { this->origin.x - this->radius,
+                    this->origin.y - this->radius,
+                    this->origin.z - this->radius };
+
+    Vector3 p2 = { this->origin.x + this->radius,
+                    this->origin.y + this->radius,
+                    this->origin.z + this->radius };
+
+   this->bounding_box = { p1, p2}; 
 }
 
 
 
 std::optional<RayCollision> Sphere::ray_intersect(const Ray& ray, const std::vector<LightSource>& light_sources)
 {
-
+    if( !this->bounding_box.does_intersect(ray) )
+        return std::optional<RayCollision>();
+         
     // d is ray
     // c is sphere
     float x_d = ray.direction.x;
@@ -37,16 +50,17 @@ std::optional<RayCollision> Sphere::ray_intersect(const Ray& ray, const std::vec
     float C =   ((x_o - x_c) * (x_o - x_c)) +
                 ((y_o - y_c) * (y_o - y_c)) + 
                 ((z_o - z_c) * (z_o - z_c)) - 
-                (r_s * r_s);;
+                (r_s * r_s);
 
     float discriminant = (B * B) - (4 * C);
 
     if(discriminant < 0)
         return std::optional<RayCollision>();
 
-    bool is_ray_inside_sphere = false;
-    float t_0 = ((-1 * B) - discriminant) / 2;
-    float t_1 = ((-1 * B) + discriminant) / 2;
+    float sqrt_discriminant = sqrt(discriminant);
+
+    float t_0 = ((-1 * B) - sqrt_discriminant) / 2;
+    float t_1 = ((-1 * B) + sqrt_discriminant) / 2;
 
     Vector3 intersection;
     Vector3 surface_normal;
@@ -89,18 +103,9 @@ std::optional<RayCollision> Sphere::ray_intersect(const Ray& ray, const std::vec
 
 
 
-BoundingBox Sphere::generate_boundingbox()
+BoundingBox Sphere::get_boundingbox()
 {
-    Vector3 p1 = { this->origin.x - this->radius,
-                    this->origin.y - this->radius,
-                    this->origin.z - this->radius };
-
-    Vector3 p2 = { this->origin.x + this->radius,
-                    this->origin.y + this->radius,
-                    this->origin.z + this->radius };
-    
-    return { p1, p2 };
-
+    return this->bounding_box;
 }
 
 

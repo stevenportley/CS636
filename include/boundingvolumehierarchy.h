@@ -7,16 +7,13 @@
 #include "boundingbox.h"
 
 
-
 class BoundingVolumeHierarchy : public Model
 {
     private:
         std::vector<std::shared_ptr<Model>> model_list;
         std::vector<BoundingVolumeHierarchy> sub_hierarchies;
+        BoundingBox bounding_box;
         void divide_hierarchies(int current_depth, int sort_axis);
-    private:
-        BoundingBox boundingbox;
-
     public:
         BoundingVolumeHierarchy( std::vector<std::shared_ptr<Model>>& models, int current_depth, int sort_axis);
         BoundingBox get_boundingbox();

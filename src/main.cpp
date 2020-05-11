@@ -10,6 +10,7 @@
 #include "scene.h"
 #include "triangle.h"
 #include "light.h"
+#include "boundingvolumehierarchy.h"
 
 int main(int argc, char** argv)
 {
@@ -21,12 +22,12 @@ int main(int argc, char** argv)
     }
     //model.display_contents();
     Vector3 camera_direction = {-1.0f, -1.0f, -1.0f};
-    Vector3 camera_origin = {3.0f, 3.0f, 3.0f};
+    Vector3 camera_origin = {1.0f, 1.0f, 1.0f};
     Vector3 camera_view_up_direction = {0.0f, 1.0f, 0.0f};
     Scene scene(0.10f, camera_direction, camera_view_up_direction, camera_origin);
 
 
-    std::vector<Mesh> mesh_list;
+    std::vector<BoundingVolumeHierarchy> hierarchies;
     ColorRGB model_color = {1.0f, 1.0f, 1.0f};
 
     for(int i = 1; i < argc; i++)
@@ -39,14 +40,17 @@ int main(int argc, char** argv)
             continue;
         }
         Mesh mesh(in, model_color);
-        mesh_list.push_back(mesh);
+
+        std::vector<std::shared_ptr<Model>> triangle_list = mesh.get_triangles();
+        
+
+        BoundingVolumeHierarchy bvh(triangle_list, 0, 0);
+        std::cout << "Finished generating a BVH" << std::endl;
+        hierarchies.push_back(bvh);
     }
 
-    for(auto& mesh : mesh_list)
-    {
-        scene.add_model(&mesh);
-    }
-    
+    for( auto& hierarchy : hierarchies)
+        scene.add_model(&hierarchy);
 
 
     //Sphere sphere({3.0f, 1.5f, 1.5f}, 0.5f, {1.0f, 1.0f, 0.0f});
@@ -67,7 +71,8 @@ int main(int argc, char** argv)
     LightSource light2 = {light_location2, {0.80, 0.80, 0.80}};
     scene.add_light( light );
     scene.add_light( light2 );
-
+    
+    std::cout << "Starting render" << std::endl;
     scene.render();
 
    
