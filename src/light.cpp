@@ -8,13 +8,14 @@
 ColorRGB calculate_light(ColorRGB model_color, Vector3 view_origin, Vector3 intersection, Vector3 normal, const std::vector<LightSource>& light_sources)
 {
 
-    ColorRGB ia = {0.35, 0.35, 0.35};
+    ColorRGB ia = {0.25, 0.25, 0.25};
 
     ColorRGB total_intensity = {0.0f, 0.0f, 0.0f};
     for( auto& light : light_sources)
     {
         Vector3 object_to_light = light.location - intersection;
         normalize(object_to_light);
+        normalize(normal);
         float n_dot_l = dot_product(normal, object_to_light);
         if( n_dot_l < 0)
             n_dot_l = 0.0f;
