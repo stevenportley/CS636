@@ -10,6 +10,7 @@
 #include "triangle.h"
 #include "boundingbox.h"
 
+static BoundingBox generate_boundingbox(const std::vector<Vertex>& vertices);
 
 Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
 {
@@ -92,41 +93,11 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
 
     this->color = color;
 
-
-    Vector3 min = vertices[0].location;
-    Vector3 max = vertices[0].location;
-
-    for(auto& vertex : vertices)
-    {
-        if(vertex.location.x < min.x)
-            min.x = vertex.location.x;
-
-        if(vertex.location.x > max.x)
-            max.x = vertex.location.x;
-
-        if(vertex.location.y < min.y)
-            min.y = vertex.location.y;
-
-        if(vertex.location.y > max.y)
-            max.y = vertex.location.y;
-
-        if(vertex.location.z < min.z)
-            min.z = vertex.location.z;
-
-        if(vertex.location.z > max.z)
-            max.z = vertex.location.z;
-
-    }
-
-
-
-    BoundingBox box(min, max);
-
-    this->bounding_box = box;
+    this->bounding_box = generate_boundingbox( this->vertices);
 
 
     std::cout << "Finished loading model " << std::endl;
-    std::cout << "Bounding box: [" << min.x << min.y << min.z << "] [" << max.x << max.y << max.z << "]" << std::endl;
+    std::cout << "Bounding box: [" << this->bounding_box.p1.x << ", " << this->bounding_box.p1.y << ", "  << this->bounding_box.p1.z << "]   [" << this->bounding_box.p2.x << ", " << this->bounding_box.p2.y  << ", " << this->bounding_box.p2.z << "]" << std::endl;
 
 }
 
@@ -218,5 +189,51 @@ Vector3 Mesh::get_centroid()
 
 }
 
+void Mesh::translate( Vector3 v)
+{
+
+    for(auto& vertex : this->vertices)
+    {
+        vertex.location = vertex.location + v;
+    }
+
+    this->bounding_box = generate_boundingbox(this->vertices);
+
+
+}
+
+BoundingBox generate_boundingbox(const std::vector<Vertex>& vertices)
+{
+
+    Vector3 min = vertices[0].location;
+    Vector3 max = vertices[0].location;
+
+    for(auto& vertex : vertices)
+    {
+        if(vertex.location.x < min.x)
+            min.x = vertex.location.x;
+
+        if(vertex.location.x > max.x)
+            max.x = vertex.location.x;
+
+        if(vertex.location.y < min.y)
+            min.y = vertex.location.y;
+
+        if(vertex.location.y > max.y)
+            max.y = vertex.location.y;
+
+        if(vertex.location.z < min.z)
+            min.z = vertex.location.z;
+
+        if(vertex.location.z > max.z)
+            max.z = vertex.location.z;
+
+    }
+
+
+    BoundingBox box(min, max);
+    return box;
+
+}
 
 

@@ -31,5 +31,6 @@ class Mesh: public Model
         Vector3 get_centroid();
         std::optional<RayCollision> ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources);
         std::vector<std::shared_ptr<Model>> get_triangles();
+        void translate( Vector3 v );
         void display_contents();
 };
