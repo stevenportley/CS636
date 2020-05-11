@@ -67,12 +67,14 @@ int main(int argc, char** argv)
         scene.add_model(&hierarchy);
 
 
-    //Sphere sphere({3.0f, 1.5f, 1.5f}, 0.5f, {1.0f, 1.0f, 0.0f});
-    //Sphere sphere2({0, 1, 0.0}, 0.50, {0.80, 0.20, 0.2});
-    //Sphere sphere3({3.0f, -1.5f, -1.5f}, 0.5f, {0.20, 0.80, 0.80});
-    //scene.add_model(&sphere);
-    //scene.add_model(&sphere2);
-    //scene.add_model(&sphere3);
+    Sphere sphere({-3.0f, -1.50f, 1.5f}, 0.50f, {1.0f, 1.0f, 0.0f});
+    Sphere sphere2({-3.0f, 0.0f, 2.5f}, 0.50f, {0.80, 0.20, 0.2});
+    Sphere sphere3({-3.0f, 1.00f, 1.0f}, 0.50f, {0.20, 0.80, 0.80});
+    Sphere sphere4({-3.0f, 0.0f, 1.0f}, 0.50f, {0.20, 0.20, 0.80});
+    scene.add_model(&sphere);
+    scene.add_model(&sphere2);
+    scene.add_model(&sphere3);
+    scene.add_model(&sphere4);
 /**
     ColorRGB model_color = {1.0f, 1.0f, 1.0f};
     Mesh mesh(in, model_color);

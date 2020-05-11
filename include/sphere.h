@@ -17,5 +17,6 @@ class Sphere: public Model
         Sphere(Vector3 origin, float radius, ColorRGB color);
         std::optional<RayCollision> ray_intersect(const Ray& ray, const std::vector<LightSource>& light_sources);
         BoundingBox get_boundingbox();
+        Vector3 get_centroid();
 };
 

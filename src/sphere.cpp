@@ -108,6 +108,12 @@ BoundingBox Sphere::get_boundingbox()
     return this->bounding_box;
 }
 
+Vector3 Sphere::get_centroid()
+{
+
+    return this->origin;
+}
+
 
 
 

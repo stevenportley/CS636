@@ -13,7 +13,8 @@ BoundingVolumeHierarchy::BoundingVolumeHierarchy( std::vector<std::shared_ptr<Mo
     this->model_list = models;
     this->bounding_box = generate_boundingbox(models);
     if(current_depth < BOUND_MAX_DEPTH)
-        this->divide_hierarchies(current_depth, sort_axis);
+        if(model_list.size() > NUM_MODELS_THRESHOLD)
+            this->divide_hierarchies(current_depth, sort_axis);
 }
 
 
@@ -78,42 +79,48 @@ std::optional<RayCollision> BoundingVolumeHierarchy::ray_intersect(const Ray& ra
     if( ! this->get_boundingbox().does_intersect(ray) )
         return std::optional<RayCollision>();
 
+    std::optional<RayCollision> closest;
     std::optional<RayCollision> temp;
+
     if(sub_hierarchies.size() == 0)
     {
         /** We have no subhierarchies (hit limit), so we just check all meshes here **/
         
-        std::optional<RayCollision> temp2;
         for( auto& model : model_list)
         {
-            if(temp2 = model->ray_intersect(ray, light_sources))
+            if(temp = model->ray_intersect(ray, light_sources))
             {
                 /** If this model is a collision **/
-                if(!temp)
+                if(!closest)
                 {
-                    temp = temp2;
+                    closest = temp;
                 }else
                 {
-                    if( magnitude(temp2->location - temp2->source_location) < magnitude(temp->location - temp->source_location) )
+                    if( magnitude(temp->location - temp->source_location) < magnitude(closest->location - closest->source_location) )
                     {
                         /** If this collision is closer than temp **/
-                        temp = temp2;
+                        closest = temp;
 
                     }
                 }
             }
         }
-        return temp;
+        return closest;
     }
 
     for( auto& sub_hierarchy : this->sub_hierarchies)
     {
         if( temp = sub_hierarchy.ray_intersect(ray, light_sources) )
-        
-            return temp;
+        {
+            if(!closest)
+                closest = temp;
+            else
+                if( magnitude(temp->location - temp->source_location) < magnitude(closest->location - closest->source_location))
+                    closest = temp;
+        }
     }
 
-    return std::optional<RayCollision>();
+    return closest;
 }
 
 
