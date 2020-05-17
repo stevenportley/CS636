@@ -10,8 +10,44 @@
 #include "light.h"
 #include "boundingbox.h"
 
+
+#define SS_MAX_DEPTH 2
+#define SS_TOLERANCE 0.20
+
+#define ADAP_SS
+//#define AVG_SS
+//#define NO_SS
+
+#define BASE_VRES 512
+#define BASE_HRES 512
+
+#ifdef ADAP_SS
+    #define VRES BASE_VRES
+    #define HRES BASE_HRES
+#endif
+
+#ifdef AVG_SS
+    #define VRES BASE_VRES*2
+    #define HRES BASE_HRES*2
+#endif
+
+#ifdef NO_SS
+    #define VRES BASE_VRES
+    #define HRES BASE_HRES
+#endif
+
+
 std::optional<float> ray_trace(const Ray& ray);
 void write_file(ColorRGB** image, ssize_t width, ssize_t height);
+
+static auto is_tolerable = [](ColorRGB& A, ColorRGB& B)
+{
+    ColorRGB diff = A - B;
+    float mag = std::sqrt( (diff.red*diff.red) + (diff.green*diff.green) + (diff.blue*diff.blue) );
+
+    return (mag < SS_TOLERANCE) ? true : false;
+};
+
 
 
 Scene::Scene(float viewplane_distance, Vector3 camera_direction, Vector3 camera_view_up_direction, Vector3 camera_origin)
@@ -36,10 +72,10 @@ void Scene::render()
     Vector3 image_plane_origin = (camera_origin) + (this->viewplane_distance * this->camera_direction) - ( (image_width/2) * camera_side_view) + ((image_height/2) * this->camera_view_up_directon);
 
 
-    ColorRGB** image = new ColorRGB * [VRES]; 
-    for(int i = 0; i < VRES; i++)
+    ColorRGB** image = new ColorRGB * [VRES+1]; 
+    for(int i = 0; i < VRES+1; i++)
     {
-        image[i] = new ColorRGB[HRES];
+        image[i] = new ColorRGB[HRES+1];
 
     }
 
@@ -52,9 +88,10 @@ void Scene::render()
 
     Ray this_ray;
     Vector3 prenormal_ray;
-    for(int v = 0; v < VRES; v++)
+    for(int v = 0; v < VRES+1; v++)
     {
-        for(int h = 0; h < HRES; h++)
+
+        for(int h = 0; h < HRES+1; h++)
         {
             Vector3 horiz_diff = image_width * ((float)h/(((float)HRES)-1)) * camera_side_view;
             Vector3 vert_diff = image_height * ((float)v/(((float)VRES)-1)) * this->camera_view_up_directon;
@@ -63,21 +100,64 @@ void Scene::render()
 
             this_ray = {camera_origin, view_direction};
 
-            std::optional<ColorRGB> pixel_color = this->ray_trace(this_ray);
+            image[v][h] = this->ray_trace(this_ray);
 
-            if( pixel_color)
-            {
-                image[v][h] = *pixel_color;
-            }else{
-                image[v][h] = {0.0f, 0.0f, 0.0f};
-            }
         }
     }
+
+#ifdef ADAP_SS
+    std::cout << "Starting AA-Supersampling" << std::endl;
+
+    for(int v = 0; v < VRES; v++)
+    {
+        for(int h = 0; h < HRES; h++)
+        {
+            Vector3 horiz_diff = image_width * ((float)h/(((float)HRES)-1)) * camera_side_view;
+            Vector3 vert_diff = image_height * ((float)v/(((float)VRES)-1)) * this->camera_view_up_directon;
+            Vector3 horiz_diff_next = image_width * ((float)(h+1)/(((float)HRES)-1)) * camera_side_view;
+            Vector3 vert_diff_next = image_height * ((float)(v+1)/(((float)VRES)-1)) * this->camera_view_up_directon;
+  
+            Vector3 view_direction = image_plane_origin + horiz_diff - vert_diff - camera_origin;
+            normalize(view_direction);
+
+            this_ray = {camera_origin, view_direction};
+           
+            if( !is_tolerable( image[v][h], image[v][h+1]) )
+            {
+                image[v][h] = adap_ss_ray_trace(image_plane_origin, horiz_diff, horiz_diff_next, vert_diff, vert_diff_next);
+                continue;
+            }
+            
+            if( !is_tolerable( image[v][h], image[v+1][h]) )
+            {
+                image[v][h] = adap_ss_ray_trace(image_plane_origin, horiz_diff, horiz_diff_next, vert_diff, vert_diff_next);
+                continue;
+            }       
+
+            if( !is_tolerable( image[v+1][h+1], image[v+1][h]) )
+            {
+                image[v][h] = adap_ss_ray_trace(image_plane_origin, horiz_diff, horiz_diff_next, vert_diff, vert_diff_next);
+                continue;
+            }       
+
+            if( !is_tolerable( image[v+1][h+1], image[v][h+1]) )
+            {
+                image[v][h] = adap_ss_ray_trace(image_plane_origin, horiz_diff, horiz_diff_next, vert_diff, vert_diff_next);
+                continue;
+            }
+
+        }
+    }
+
+
+#endif
     std::cout << "Camera origin: " << camera_origin << std::endl;
     std::cout << "Camera view direction: " << this->camera_direction << std::endl;
     std::cout << "Camera view up: " << this->camera_view_up_directon << std::endl;
     std::cout << "Camera view side: " << camera_side_view << std::endl;
 
+
+#ifdef AVG_SS
     ColorRGB** new_image = new ColorRGB * [VRES/2]; 
     for(int i = 0; i < VRES/2; i++)
     {
@@ -107,9 +187,130 @@ void Scene::render()
         }
     }
 
-
     write_file(new_image, HRES/2, VRES/2);
+    return;
+#endif
 
+    write_file(image, HRES, VRES);
+
+
+}
+
+
+ColorRGB Scene::adap_helper( std::optional<ColorRGB> ss_matrix[5][5], Ray vec_matrix[5][5], int depth, int i, int j, int offset)
+{
+    
+    if( !ss_matrix[i][j])
+        ss_matrix[i][j] = this->ray_trace( vec_matrix[i][j]);
+
+    if( !ss_matrix[i][j+offset])
+        ss_matrix[i][j+offset] = this->ray_trace( vec_matrix[i][j+offset]);
+
+    if( !ss_matrix[i+offset][j])
+        ss_matrix[i+offset][j] = this->ray_trace( vec_matrix[i+offset][j]);
+
+    if( !ss_matrix[i+offset][j+offset])
+        ss_matrix[i+offset][j+offset] = this->ray_trace( vec_matrix[i+offset][j+offset]);
+
+    if( offset == 1)
+    {
+        ColorRGB top_left = *ss_matrix[i][j];
+        ColorRGB top_right = *ss_matrix[i+offset][j];
+        ColorRGB bottom_left = *ss_matrix[i][j+offset];
+        ColorRGB bottom_right = *ss_matrix[i+offset][j+offset];
+
+        return (top_left + top_right + bottom_left + bottom_right) / 4;
+    }
+
+
+    
+    if( !is_tolerable( *ss_matrix[i][j], *ss_matrix[i][j+offset] ))
+    {
+        int half_off = offset / 2;
+        ColorRGB sub_div1 = adap_helper( ss_matrix, vec_matrix, depth+1, i,            j,            half_off);
+        ColorRGB sub_div2 = adap_helper( ss_matrix, vec_matrix, depth+1, i + half_off, j,            half_off);
+        ColorRGB sub_div3 = adap_helper( ss_matrix, vec_matrix, depth+1, i,            j + half_off, half_off);
+        ColorRGB sub_div4 = adap_helper( ss_matrix, vec_matrix, depth+1, i + half_off, j + half_off, half_off);
+        return (sub_div1 + sub_div2 + sub_div3 + sub_div4) / 4;
+
+    }
+    
+    if( !is_tolerable( *ss_matrix[i][j], *ss_matrix[i+offset][j] ))
+    {
+        int half_off = offset / 2;
+        ColorRGB sub_div1 = adap_helper( ss_matrix, vec_matrix, depth+1, i,            j,            half_off);
+        ColorRGB sub_div2 = adap_helper( ss_matrix, vec_matrix, depth+1, i + half_off, j,            half_off);
+        ColorRGB sub_div3 = adap_helper( ss_matrix, vec_matrix, depth+1, i,            j + half_off, half_off);
+        ColorRGB sub_div4 = adap_helper( ss_matrix, vec_matrix, depth+1, i + half_off, j + half_off, half_off);
+        return (sub_div1 + sub_div2 + sub_div3 + sub_div4) / 4;
+
+    }
+
+    
+    if( !is_tolerable( *ss_matrix[i+offset][j], *ss_matrix[i+offset][j+offset] ))
+    {
+        int half_off = offset / 2;
+        ColorRGB sub_div1 = adap_helper( ss_matrix, vec_matrix, depth+1, i,            j,            half_off);
+        ColorRGB sub_div2 = adap_helper( ss_matrix, vec_matrix, depth+1, i + half_off, j,            half_off);
+        ColorRGB sub_div3 = adap_helper( ss_matrix, vec_matrix, depth+1, i,            j + half_off, half_off);
+        ColorRGB sub_div4 = adap_helper( ss_matrix, vec_matrix, depth+1, i + half_off, j + half_off, half_off);
+        return (sub_div1 + sub_div2 + sub_div3 + sub_div4) / 4;
+
+    }
+
+    
+    if( !is_tolerable( *ss_matrix[i][j+offset], *ss_matrix[i+offset][j+offset] ))
+    {
+        int half_off = offset / 2;
+        ColorRGB sub_div1 = adap_helper( ss_matrix, vec_matrix, depth+1, i,            j,            half_off);
+        ColorRGB sub_div2 = adap_helper( ss_matrix, vec_matrix, depth+1, i + half_off, j,            half_off);
+        ColorRGB sub_div3 = adap_helper( ss_matrix, vec_matrix, depth+1, i,            j + half_off, half_off);
+        ColorRGB sub_div4 = adap_helper( ss_matrix, vec_matrix, depth+1, i + half_off, j + half_off, half_off);
+        return (sub_div1 + sub_div2 + sub_div3 + sub_div4) / 4;
+
+    }
+
+    ColorRGB top_left = *ss_matrix[i][j];
+    ColorRGB top_right = *ss_matrix[i+offset][j];
+    ColorRGB bottom_left = *ss_matrix[i][j+offset];
+    ColorRGB bottom_right = *ss_matrix[i+offset][j+offset];
+
+    return (top_left + top_right + bottom_left + bottom_right) / 4;
+}
+
+
+
+ColorRGB Scene::adap_ss_ray_trace(Vector3 image_plane_origin, Vector3 horiz_diff, Vector3 horiz_diff_next, Vector3 vert_diff, Vector3 vert_diff_next)
+{
+    std::optional<ColorRGB> ss_matrix[5][5];
+    for(int i = 0; i < 5; i++)
+    {
+        for(int j = 0; j < 5; j++)
+        {
+            ss_matrix[i][j] = std::optional<ColorRGB>();
+        }
+    }
+
+
+    /** precompute all of the rays **/
+    Ray vec_matrix[5][5]; 
+    Vector3 horiz_delta = (horiz_diff_next - horiz_diff) / 5;
+    Vector3 vert_delta = (vert_diff_next - vert_diff) / 5;
+
+    for(int i = 0; i < 5; i++)
+    {
+        for(int j = 0; j < 5; j++)
+        {
+            Vector3 temp_horiz_diff = horiz_diff + ( j * horiz_delta );
+            Vector3 temp_vert_diff = vert_diff + ( i * vert_delta );
+            Vector3 view_direction = image_plane_origin + temp_horiz_diff - temp_vert_diff - camera_origin;
+            normalize(view_direction);
+            vec_matrix[i][j] = { camera_origin, view_direction };
+        }
+    }
+
+    ColorRGB result = adap_helper( ss_matrix, vec_matrix, 0, 0, 0, 4);
+    return result;
 
 }
 
@@ -123,7 +324,7 @@ void Scene::add_light(LightSource& new_light)
     this->light_sources.push_back(new_light);
 }
 
-std::optional<ColorRGB> Scene::ray_trace(const Ray& ray)
+ColorRGB Scene::ray_trace(const Ray& ray)
 {
     std::vector<RayCollision> intersections;
     std::vector<ColorRGB> colors;
@@ -141,8 +342,7 @@ std::optional<ColorRGB> Scene::ray_trace(const Ray& ray)
     }
 
     if(intersections.size() == 0)
-        return std::optional<ColorRGB>();
-
+        return { };
 
 
     int idx = 0;
@@ -154,9 +354,9 @@ std::optional<ColorRGB> Scene::ray_trace(const Ray& ray)
             idx = i;
         }
 
-
     }
 
+    /** Return black background if ray misses **/
     return colors[idx];
 
 }

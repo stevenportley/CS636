@@ -4,10 +4,10 @@
 #include "vector3.h"
 
 
-#define KD 0.6f     /** Diffuse surface reflectance coefficient **/
-#define KS 0.6f     /** Specular surface reflectance coefficient **/
-#define KA 0.2f     /** Ambient surface reflectance coefficeint **/
-#define IA 0.15f
+#define KD 0.7f     /** Diffuse surface reflectance coefficient **/
+#define KS 0.5f     /** Specular surface reflectance coefficient **/
+#define KA 0.4f     /** Ambient surface reflectance coefficeint **/
+#define IA 0.25f
 #define SHININESS 30
 
 
@@ -29,3 +29,5 @@ ColorRGB operator+(ColorRGB const& lhs, ColorRGB const& rhs);
 ColorRGB operator*(ColorRGB const& lhs, float const& rhs);
 ColorRGB operator*(float const& lhs, ColorRGB const& rhs);
 ColorRGB operator*(ColorRGB const& lhs, ColorRGB const& rhs);
+ColorRGB operator/(ColorRGB const& lhs, int const& rhs);
+ColorRGB operator-(ColorRGB const& lhs, ColorRGB const& rhs);

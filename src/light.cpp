@@ -92,3 +92,24 @@ ColorRGB operator*(ColorRGB const& lhs, ColorRGB const& rhs)
         .blue = rhs.blue * lhs.blue
     };
 }
+
+ColorRGB operator/(ColorRGB const& lhs, int const& rhs)
+{
+    return{
+        .red = lhs.red / rhs,
+        .green = lhs.green / rhs,
+        .blue = lhs.blue / rhs,
+    };
+}
+
+ColorRGB operator-(ColorRGB const& lhs, ColorRGB const& rhs)
+{
+    return{
+        .red = lhs.red - rhs.red,
+        .green = lhs.green - rhs.green,
+        .blue = lhs.blue - rhs.blue
+    };
+};
+
+
+
