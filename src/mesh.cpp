@@ -97,7 +97,6 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
 
 
     std::cout << "Finished loading model " << std::endl;
-    std::cout << "Bounding box: [" << this->bounding_box.p1.x << ", " << this->bounding_box.p1.y << ", "  << this->bounding_box.p1.z << "]   [" << this->bounding_box.p2.x << ", " << this->bounding_box.p2.y  << ", " << this->bounding_box.p2.z << "]" << std::endl;
 
 }
 
@@ -123,7 +122,7 @@ void Mesh::display_contents()
 
 }
 
-std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources)
+std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray)
 {
 
     /** Miss bounding box, early drop out **/
@@ -137,7 +136,7 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray, const std::vect
     {
         Triangle t( this->color, this->vertices[face.p1], this->vertices[face.p2], this->vertices[face.p3]);
         
-        std::optional<RayCollision> tri_intersect = t.ray_intersect(ray, light_sources);
+        std::optional<RayCollision> tri_intersect = t.ray_intersect(ray);
         if(tri_intersect)
             collisions.push_back(*tri_intersect);
 
@@ -200,6 +199,7 @@ void Mesh::translate( Vector3 v)
     this->bounding_box = generate_boundingbox(this->vertices);
 
 
+    std::cout << "Bounding box: [" << this->bounding_box.p1.x << ", " << this->bounding_box.p1.y << ", "  << this->bounding_box.p1.z << "]   [" << this->bounding_box.p2.x << ", " << this->bounding_box.p2.y  << ", " << this->bounding_box.p2.z << "]" << std::endl;
 }
 
 BoundingBox generate_boundingbox(const std::vector<Vertex>& vertices)

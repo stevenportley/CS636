@@ -5,31 +5,58 @@
 #include "light.h"
 
 
-ColorRGB calculate_light(ColorRGB model_color, Vector3 view_origin, Vector3 intersection, Vector3 normal, const std::vector<LightSource>& light_sources)
+ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<LightSource>& light_sources, const std::vector<Model*>& models)
 {
+    ColorRGB ia = {0.4, 0.4, 0.4};
 
-    ColorRGB ia = {0.25, 0.25, 0.25};
 
     ColorRGB total_intensity = {0.0f, 0.0f, 0.0f};
     for( auto& light : light_sources)
     {
-        Vector3 object_to_light = light.location - intersection;
+        bool is_shadow = false;
+        
+        Vector3 shadow_direction = light.location - intersection_data.location;
+        normalize(shadow_direction);
+        
+        /** Move shadow ray origin ever so slightly in the direction of the shadow ray to avoid recollisions **/
+        Vector3 shadow_location = intersection_data.location + (0.01 * intersection_data.normal);
+
+        Ray shadow_ray{
+            .origin = shadow_location,
+            .direction = shadow_direction,
+        };
+
+        for( auto& model : models)
+        {
+            if( model->ray_intersect( shadow_ray) )
+            {
+                is_shadow = true;
+                break;
+            }
+        }
+
+        if(is_shadow)
+            continue;
+
+        Vector3 object_to_light = light.location - intersection_data.location;
         normalize(object_to_light);
-        normalize(normal);
-        float n_dot_l = dot_product(normal, object_to_light);
+        normalize(intersection_data.normal);
+        float n_dot_l = dot_product(intersection_data.normal, object_to_light);
         if( n_dot_l < 0)
             n_dot_l = 0.0f;
 
         total_intensity = total_intensity + (light.light * KD * n_dot_l); /** Diffuse reflection **/
 
-        Vector3 reflected_ray = (2 * n_dot_l * normal) - object_to_light;
+        Vector3 reflected_ray = (2 * n_dot_l * intersection_data.normal) - object_to_light;
+
         normalize(reflected_ray);
-        Vector3 v = view_origin - intersection;
+        Vector3 v = intersection_data.source_location - intersection_data.location;
         normalize(v);
         float r_dot_v = dot_product(reflected_ray, v);
         r_dot_v = std::pow(r_dot_v, SHININESS);
         if( r_dot_v < 0.0f)
             r_dot_v = 0.0f;
+
 
         total_intensity = total_intensity + (light.light * KS * r_dot_v); /** Specular reflection **/
 
@@ -38,7 +65,7 @@ ColorRGB calculate_light(ColorRGB model_color, Vector3 view_origin, Vector3 inte
 
     total_intensity = total_intensity + (ia * KA);
 
-    ColorRGB color = model_color * total_intensity;
+    ColorRGB color = intersection_data.color * total_intensity;
 
     if(color.red > 1.0f)
         color.red = 1.0f;

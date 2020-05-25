@@ -73,7 +73,7 @@ Vector3 BoundingVolumeHierarchy::get_centroid()
 
 
 
-std::optional<RayCollision> BoundingVolumeHierarchy::ray_intersect(const Ray& ray, const std::vector<LightSource>& light_sources)
+std::optional<RayCollision> BoundingVolumeHierarchy::ray_intersect(const Ray& ray)
 {
 
     if( ! this->get_boundingbox().does_intersect(ray) )
@@ -88,7 +88,7 @@ std::optional<RayCollision> BoundingVolumeHierarchy::ray_intersect(const Ray& ra
         
         for( auto& model : model_list)
         {
-            if(temp = model->ray_intersect(ray, light_sources))
+            if(temp = model->ray_intersect(ray))
             {
                 /** If this model is a collision **/
                 if(!closest)
@@ -110,7 +110,7 @@ std::optional<RayCollision> BoundingVolumeHierarchy::ray_intersect(const Ray& ra
 
     for( auto& sub_hierarchy : this->sub_hierarchies)
     {
-        if( temp = sub_hierarchy.ray_intersect(ray, light_sources) )
+        if( temp = sub_hierarchy.ray_intersect(ray) )
         {
             if(!closest)
                 closest = temp;

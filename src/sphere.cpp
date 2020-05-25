@@ -22,7 +22,7 @@ Sphere::Sphere(Vector3 origin, float radius, ColorRGB color) : bounding_box( {},
 
 
 
-std::optional<RayCollision> Sphere::ray_intersect(const Ray& ray, const std::vector<LightSource>& light_sources)
+std::optional<RayCollision> Sphere::ray_intersect(const Ray& ray)
 {
     if( !this->bounding_box.does_intersect(ray) )
         return std::optional<RayCollision>();
@@ -86,12 +86,11 @@ std::optional<RayCollision> Sphere::ray_intersect(const Ray& ray, const std::vec
         return std::optional<RayCollision>();
     }
 
-    ColorRGB color = calculate_light(this->color, ray.origin, intersection, surface_normal, light_sources);
 
     //Vector3 surface_normal = 
     RayCollision output =
     {
-        .color = color,
+        .color = this->color,
         .location = intersection,
         .normal = surface_normal,
         .source_location = ray.origin

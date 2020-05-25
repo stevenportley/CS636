@@ -55,7 +55,7 @@ Triangle::Triangle(ColorRGB color, Vertex A, Vertex B, Vertex C) : bounding_box(
 
 }
 
-std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources)
+std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray)
 {
     float a_x = this->A.location.x;
     float a_y = this->A.location.y;
@@ -110,16 +110,15 @@ std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray, const std::
 
     /** We have a collision!! **/
     Vector3 intersection = { 
-        ray.origin.x + t*ray.direction.x,
-        ray.origin.y + t*ray.direction.y,
-        ray.origin.z + t*ray.direction.z,
+        ray.origin.x + (t*ray.direction.x),
+        ray.origin.y + (t*ray.direction.y),
+        ray.origin.z + (t*ray.direction.z),
     };
 
-    ColorRGB color = calculate_light(this->color, ray.origin, intersection, point_normal, light_sources);
 
 
     RayCollision ray_collision = {
-        .color = color,
+        .color = this->color,
         .location = intersection,
         .normal = point_normal,
         .source_location = ray.origin
@@ -145,16 +144,5 @@ Vector3 Triangle::get_centroid()
              (this->A.location.z + this->B.location.z + this->C.location.z) / 3};
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 

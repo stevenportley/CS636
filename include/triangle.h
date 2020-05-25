@@ -19,5 +19,5 @@ class Triangle : public Model
         Triangle(ColorRGB color, Vertex A, Vertex B, Vertex C);
         BoundingBox get_boundingbox();
         Vector3 get_centroid();
-        std::optional<RayCollision> ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources);
+        std::optional<RayCollision> ray_intersect( const Ray& ray);
 };

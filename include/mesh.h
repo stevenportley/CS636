@@ -29,7 +29,7 @@ class Mesh: public Model
         Mesh( std::ifstream& mesh_file, ColorRGB color );
         BoundingBox get_boundingbox();
         Vector3 get_centroid();
-        std::optional<RayCollision> ray_intersect( const Ray& ray, const std::vector<LightSource>& light_sources);
+        std::optional<RayCollision> ray_intersect( const Ray& ray);
         std::vector<std::shared_ptr<Model>> get_triangles();
         void translate( Vector3 v );
         void display_contents();

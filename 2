@@ -92,15 +92,12 @@ int main(int argc, char** argv)
 **/    
     
 
-    Vector3 light_location = {5.0f, 10.0f, 5.0f};
-    Vector3 light_location2 = {-7.0f, 10.0f, 5.0f};
-    Vector3 light_location3 = {0.0f, 10.0f, -5.0f};
+    Vector3 light_location = {5.0f, 20.0f, -10.0f};
+    Vector3 light_location2 = {-7.0f, 20.0f, 10.0f};
     LightSource light = {light_location, {0.80, 0.80, 0.80}};
     LightSource light2 = {light_location2, {0.80, 0.80, 0.80}};
-    LightSource light3 {light_location3, {0.80, 0.80, 0.80}};
     scene.add_light( light );
     scene.add_light( light2 );
-    scene.add_light( light3 );
     
     std::cout << "Starting render" << std::endl;
     scene.render();

@@ -12,14 +12,14 @@
 
 
 #define SS_MAX_DEPTH 2
-#define SS_TOLERANCE 0.20
+#define SS_TOLERANCE 0.15
 
 #define ADAP_SS
 //#define AVG_SS
 //#define NO_SS
 
-#define BASE_VRES 512
-#define BASE_HRES 512
+#define BASE_VRES 1024
+#define BASE_HRES 1024
 
 #ifdef ADAP_SS
     #define VRES BASE_VRES
@@ -37,8 +37,11 @@
 #endif
 
 
+int** ray_count;
+int curr_h, curr_v;
+
 std::optional<float> ray_trace(const Ray& ray);
-void write_file(ColorRGB** image, ssize_t width, ssize_t height);
+void write_file(const char * filename, ColorRGB** image, ssize_t width, ssize_t height);
 
 static auto is_tolerable = [](ColorRGB& A, ColorRGB& B)
 {
@@ -107,6 +110,14 @@ void Scene::render()
 
 #ifdef ADAP_SS
     std::cout << "Starting AA-Supersampling" << std::endl;
+    ray_count = new int*[VRES];
+    for(int i = 0; i < VRES; i++)
+        ray_count[i] = new int[HRES];
+
+    /** We have already shot 1 ray per pixel already **/
+    for(int v = 0; v < VRES; v++)
+        for(int h = 0; h < HRES; h++)
+            ray_count[v][h] = 1;
 
     for(int v = 0; v < VRES; v++)
     {
@@ -124,24 +135,35 @@ void Scene::render()
            
             if( !is_tolerable( image[v][h], image[v][h+1]) )
             {
+                curr_h = h;
+                curr_v = v;
                 image[v][h] = adap_ss_ray_trace(image_plane_origin, horiz_diff, horiz_diff_next, vert_diff, vert_diff_next);
                 continue;
             }
             
             if( !is_tolerable( image[v][h], image[v+1][h]) )
             {
+                curr_h = h;
+                curr_v = v;
+                image[v][h] = adap_ss_ray_trace(image_plane_origin, horiz_diff, horiz_diff_next, vert_diff, vert_diff_next);
                 image[v][h] = adap_ss_ray_trace(image_plane_origin, horiz_diff, horiz_diff_next, vert_diff, vert_diff_next);
                 continue;
             }       
 
             if( !is_tolerable( image[v+1][h+1], image[v+1][h]) )
             {
+                curr_h = h;
+                curr_v = v;
+                image[v][h] = adap_ss_ray_trace(image_plane_origin, horiz_diff, horiz_diff_next, vert_diff, vert_diff_next);
                 image[v][h] = adap_ss_ray_trace(image_plane_origin, horiz_diff, horiz_diff_next, vert_diff, vert_diff_next);
                 continue;
             }       
 
             if( !is_tolerable( image[v+1][h+1], image[v][h+1]) )
             {
+                curr_h = h;
+                curr_v = v;
+                image[v][h] = adap_ss_ray_trace(image_plane_origin, horiz_diff, horiz_diff_next, vert_diff, vert_diff_next);
                 image[v][h] = adap_ss_ray_trace(image_plane_origin, horiz_diff, horiz_diff_next, vert_diff, vert_diff_next);
                 continue;
             }
@@ -149,6 +171,27 @@ void Scene::render()
         }
     }
 
+    ColorRGB** new_image = new ColorRGB * [VRES]; 
+    for(int i = 0; i < VRES; i++)
+        new_image[i] = new ColorRGB[HRES];
+
+    int max_num_rays = ray_count[0][0];
+
+    for(int v = 0; v < VRES; v++)
+        for(int h = 0; h < HRES; h++)
+            max_num_rays = (ray_count[v][h] > max_num_rays) ? ray_count[v][h] : max_num_rays;
+
+ 
+    for(int v = 0; v < VRES; v++)
+        for(int h = 0; h < HRES; h++)
+        {
+            float num_rays = ((float)ray_count[v][h]) / max_num_rays;
+            ColorRGB color = { num_rays, num_rays, num_rays };
+            new_image[v][h] = color;
+        }
+
+    write_file("ray_map.ppm", new_image, HRES, VRES);
+    
 
 #endif
     std::cout << "Camera origin: " << camera_origin << std::endl;
@@ -187,11 +230,11 @@ void Scene::render()
         }
     }
 
-    write_file(new_image, HRES/2, VRES/2);
+    write_file("image.ppm", new_image, HRES/2, VRES/2);
     return;
 #endif
 
-    write_file(image, HRES, VRES);
+    write_file("image.ppm", image, HRES, VRES);
 
 
 }
@@ -201,16 +244,28 @@ ColorRGB Scene::adap_helper( std::optional<ColorRGB> ss_matrix[5][5], Ray vec_ma
 {
     
     if( !ss_matrix[i][j])
+    {
         ss_matrix[i][j] = this->ray_trace( vec_matrix[i][j]);
+        ray_count[curr_v][curr_h] += 1;
+    }
 
     if( !ss_matrix[i][j+offset])
+    {
         ss_matrix[i][j+offset] = this->ray_trace( vec_matrix[i][j+offset]);
+        ray_count[curr_v][curr_h] += 1;
+    }
 
     if( !ss_matrix[i+offset][j])
+    {
         ss_matrix[i+offset][j] = this->ray_trace( vec_matrix[i+offset][j]);
+        ray_count[curr_v][curr_h] += 1;
+    }
 
     if( !ss_matrix[i+offset][j+offset])
+    {
         ss_matrix[i+offset][j+offset] = this->ray_trace( vec_matrix[i+offset][j+offset]);
+        ray_count[curr_v][curr_h] += 1;
+    }
 
     if( offset == 1)
     {
@@ -255,7 +310,6 @@ ColorRGB Scene::adap_helper( std::optional<ColorRGB> ss_matrix[5][5], Ray vec_ma
         ColorRGB sub_div3 = adap_helper( ss_matrix, vec_matrix, depth+1, i,            j + half_off, half_off);
         ColorRGB sub_div4 = adap_helper( ss_matrix, vec_matrix, depth+1, i + half_off, j + half_off, half_off);
         return (sub_div1 + sub_div2 + sub_div3 + sub_div4) / 4;
-
     }
 
     
@@ -327,22 +381,23 @@ void Scene::add_light(LightSource& new_light)
 ColorRGB Scene::ray_trace(const Ray& ray)
 {
     std::vector<RayCollision> intersections;
-    std::vector<ColorRGB> colors;
     std::optional<RayCollision> temp;
 
     /** Test this ray with every model and see if there is any intersections (may be more than 1) **/
     for(auto& m : this->models)
     {
-        temp = m->ray_intersect(ray, this->light_sources);
+        temp = m->ray_intersect(ray);
         if(temp)
         {
             intersections.push_back(*temp);
-            colors.push_back(temp->color);
         }
     }
 
     if(intersections.size() == 0)
-        return { };
+        return { }; /** return black if ray misses **/
+
+    if(intersections.size() == 1)
+        return calculate_light( intersections[0], this->light_sources, this->models);
 
 
     int idx = 0;
@@ -356,19 +411,19 @@ ColorRGB Scene::ray_trace(const Ray& ray)
 
     }
 
-    /** Return black background if ray misses **/
-    return colors[idx];
+    return calculate_light( intersections[idx], this->light_sources, this->models);
+
 
 }
 
 
 
-void write_file(ColorRGB** image, ssize_t width, ssize_t height)
+void write_file(const char* filename, ColorRGB** image, ssize_t width, ssize_t height)
 {
 
     FILE *imageFile;
 
-    imageFile = fopen("image.ppm", "wb");
+    imageFile = fopen(filename, "wb");
     if(imageFile == NULL){
         std::cout << "Failed to open image" << std::endl;
         return;

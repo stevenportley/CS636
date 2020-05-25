@@ -18,7 +18,7 @@ class BoundingVolumeHierarchy : public Model
         BoundingVolumeHierarchy( std::vector<std::shared_ptr<Model>>& models, int current_depth, int sort_axis);
         BoundingBox get_boundingbox();
         Vector3 get_centroid();
-        std::optional<RayCollision> ray_intersect(const Ray& ray, const std::vector<LightSource>& light_sources);
+        std::optional<RayCollision> ray_intersect(const Ray& ray);
 
 };
 
