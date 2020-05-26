@@ -7,7 +7,7 @@
 
 ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<LightSource>& light_sources, const std::vector<Model*>& models)
 {
-    ColorRGB ia = {0.4, 0.4, 0.4};
+    ColorRGB ia = {0.5, 0.5, 0.5};
 
 
     ColorRGB total_intensity = {0.0f, 0.0f, 0.0f};

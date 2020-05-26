@@ -10,7 +10,7 @@
 #include "triangle.h"
 #include "boundingbox.h"
 
-static BoundingBox generate_boundingbox(const std::vector<Vertex>& vertices);
+static BoundingBox generate_boundingbox(std::vector<Triangle>& triangles);
 
 Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
 {
@@ -18,7 +18,9 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
     std::cout << "Processing new model file." << std::endl;
 
     std::vector<Vector3> vectors;
-    std::vector<int> vertex_count; /** Indicies for vectors/normals/count all match **/
+    std::vector<Face> faces;
+    std::vector<Vector3> normals;
+    std::vector<Vertex> vertices;
 
     std::string str;
     while(std::getline(model_file, str))
@@ -46,7 +48,7 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
                 iss >> subs;
                 int p3 = std::stoi(subs) - 1;
                 //faces.push_back( {p1, p2, p3});
-               this->faces.push_back( { static_cast<size_t>(p1), static_cast<size_t>(p2), static_cast<size_t>(p3)} );
+               faces.push_back( { static_cast<size_t>(p1), static_cast<size_t>(p2), static_cast<size_t>(p3)} );
         }
     }
 
@@ -55,7 +57,7 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
         
         int count = 0;
         std::vector<Vector3> temp_normals;
-        for(auto& face : this->faces)
+        for(auto& face : faces)
         {
             if(face.p1 == i || face.p2 == i || face.p3 == i)    /** vertex i is a part of this face **/
             {
@@ -82,20 +84,24 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
 
         averaged_normal = averaged_normal / count;
         normalize(averaged_normal);
-        this->normals.push_back(averaged_normal);
+        normals.push_back(averaged_normal);
 
     }
 
     for(int i = 0; i < vectors.size(); i++)
     {
-        this->vertices.push_back( {vectors[i], this->normals[i]} );
+        vertices.push_back( {vectors[i], normals[i]} );
     }
 
     this->color = color;
 
-    this->bounding_box = generate_boundingbox( this->vertices);
+    for(auto& face: faces)
+    {
+        this->triangles.push_back( Triangle(this->color, vertices[face.p1], vertices[face.p2], vertices[face.p3]) );
+    }
 
 
+    this->bounding_box = generate_boundingbox( this->triangles);
     std::cout << "Finished loading model " << std::endl;
 
 }
@@ -132,11 +138,10 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray)
     }
 
     std::vector<RayCollision> collisions;
-    for(auto& face : this->faces)
+    for(auto& tri : this->triangles)
     {
-        Triangle t( this->color, this->vertices[face.p1], this->vertices[face.p2], this->vertices[face.p3]);
         
-        std::optional<RayCollision> tri_intersect = t.ray_intersect(ray);
+        std::optional<RayCollision> tri_intersect = tri.ray_intersect(ray);
         if(tri_intersect)
             collisions.push_back(*tri_intersect);
 
@@ -162,78 +167,50 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray)
     return std::optional<RayCollision>(temp); 
 }
 
-std::vector<std::shared_ptr<Model>> Mesh::get_triangles()
+std::vector<Triangle> Mesh::get_triangles()
 {
-    std::vector<std::shared_ptr<Model>> output;
 
-    for(auto& face: this->faces)
-    {
-        output.push_back( std::make_shared<Triangle>(this->color, this->vertices[face.p1], this->vertices[face.p2], this->vertices[face.p3]) );
-    }
-
-    return output;
-
+    return this->triangles;
 }
 
 
 Vector3 Mesh::get_centroid()
 {
     Vector3 centroids_sum = { 0.0f, 0.0f, 0.0f};
-    for(auto& vertex : this->vertices)
+    for(auto& triangle : this->triangles)
     {
-        centroids_sum = centroids_sum + vertex.location;
+
+        centroids_sum = centroids_sum + triangle.get_centroid();
     }
 
-    return centroids_sum / this->vertices.size();
+    return centroids_sum / this->triangles.size();
 
 }
 
 void Mesh::translate( Vector3 v)
 {
 
-    for(auto& vertex : this->vertices)
+    for(auto& triangle : this->triangles)
     {
-        vertex.location = vertex.location + v;
+        triangle.translate(v);
     }
 
-    this->bounding_box = generate_boundingbox(this->vertices);
+    this->bounding_box = generate_boundingbox(this->triangles);
 
 
     std::cout << "Bounding box: [" << this->bounding_box.p1.x << ", " << this->bounding_box.p1.y << ", "  << this->bounding_box.p1.z << "]   [" << this->bounding_box.p2.x << ", " << this->bounding_box.p2.y  << ", " << this->bounding_box.p2.z << "]" << std::endl;
 }
 
-BoundingBox generate_boundingbox(const std::vector<Vertex>& vertices)
+BoundingBox generate_boundingbox(std::vector<Triangle>& triangles)
 {
+    std::vector<std::shared_ptr<BoundingBox>> boxes;
 
-    Vector3 min = vertices[0].location;
-    Vector3 max = vertices[0].location;
-
-    for(auto& vertex : vertices)
+    for(auto& tri : triangles)
     {
-        if(vertex.location.x < min.x)
-            min.x = vertex.location.x;
-
-        if(vertex.location.x > max.x)
-            max.x = vertex.location.x;
-
-        if(vertex.location.y < min.y)
-            min.y = vertex.location.y;
-
-        if(vertex.location.y > max.y)
-            max.y = vertex.location.y;
-
-        if(vertex.location.z < min.z)
-            min.z = vertex.location.z;
-
-        if(vertex.location.z > max.z)
-            max.z = vertex.location.z;
-
+        boxes.push_back( std::make_shared<BoundingBox>( tri.get_boundingbox() ));
     }
 
-
-    BoundingBox box(min, max);
-    return box;
-
+    return generate_boundingbox( boxes );
 }
 
 

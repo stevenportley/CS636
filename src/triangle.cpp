@@ -131,6 +131,14 @@ std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray)
 }
 
 
+void Triangle::translate( Vector3 v)
+{
+    this->A.location = this->A.location + v;
+    this->B.location = this->B.location + v;
+    this->C.location = this->C.location + v;
+}
+
+
 BoundingBox Triangle::get_boundingbox()
 {
     return this->bounding_box;

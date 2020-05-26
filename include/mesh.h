@@ -5,6 +5,7 @@
 #include <memory>
 #include "model.h"
 #include "boundingbox.h"
+#include "triangle.h"
 
 struct Face
 {
@@ -18,19 +19,16 @@ struct Face
 class Mesh: public Model
 {
     private:
-        std::vector<Face> faces; /** a face is defined as 3 indicies into the vertices vector **/
-        std::vector<Vertex> vertices;
+        std::vector<Triangle> triangles;
         BoundingBox bounding_box;
         ColorRGB color;
-        /** Put in a ref count later, shared ptr? **/
-        std::vector<Vector3> normals;
         
     public:
         Mesh( std::ifstream& mesh_file, ColorRGB color );
         BoundingBox get_boundingbox();
         Vector3 get_centroid();
         std::optional<RayCollision> ray_intersect( const Ray& ray);
-        std::vector<std::shared_ptr<Model>> get_triangles();
+        std::vector<Triangle> get_triangles();
         void translate( Vector3 v );
         void display_contents();
 };

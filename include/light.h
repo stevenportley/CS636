@@ -4,8 +4,8 @@
 #include "vector3.h"
 #include "model.h"
 
-#define KD 0.6f     /** Diffuse surface reflectance coefficient **/
-#define KS 0.5f     /** Specular surface reflectance coefficient **/
+#define KD 0.7f     /** Diffuse surface reflectance coefficient **/
+#define KS 0.6f     /** Specular surface reflectance coefficient **/
 #define KA 0.3f     /** Ambient surface reflectance coefficeint **/
 #define IA 0.25f
 #define SHININESS 30
