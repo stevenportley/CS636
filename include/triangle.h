@@ -22,3 +22,5 @@ class Triangle : public Model
         void translate(Vector3 v);
         std::optional<RayCollision> ray_intersect( const Ray& ray);
 };
+
+

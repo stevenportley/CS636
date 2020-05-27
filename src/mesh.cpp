@@ -12,7 +12,7 @@
 
 static BoundingBox generate_boundingbox(std::vector<Triangle>& triangles);
 
-Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
+Mesh::Mesh(std::ifstream& model_file, ColorRGB color, int current_depth, int sort_axis) : bounding_box({}, {})
 {
 
     std::cout << "Processing new model file." << std::endl;
@@ -102,6 +102,13 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
 
 
     this->bounding_box = generate_boundingbox( this->triangles);
+
+    if(current_depth < BOUND_MAX_DEPTH)
+        if( this->triangles.size() > NUM_MODELS_THRESHOLD )
+            this->
+
+    
+
     std::cout << "Finished loading model " << std::endl;
 
 }
@@ -110,22 +117,6 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : bounding_box({}, {})
 BoundingBox Mesh::get_boundingbox()
 {
     return this->bounding_box;
-}
-
-
-void Mesh::display_contents()
-{
-    /**
-    for( auto face : faces)
-    {
-        std::cout << "Face:\n";
-        std::cout << vertices[face.p1].x << " " << vertices[face.p1].y << " " << vertices[face.p1].z << std::endl;
-        std::cout << vertices[face.p2].x << " " << vertices[face.p2].y << " " << vertices[face.p2].z << std::endl;
-        std::cout << vertices[face.p3].x << " " << vertices[face.p3].y << " " << vertices[face.p3].z << std::endl;
-        std::cout << std::endl;
-    }
-    **/
-
 }
 
 std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray)
@@ -211,6 +202,48 @@ BoundingBox generate_boundingbox(std::vector<Triangle>& triangles)
     }
 
     return generate_boundingbox( boxes );
+}
+
+void Mesh::sub_divide(int current_depth, int sort_axis)
+{
+
+
+    /** Functions used to compare centroids of models, for sorting **/
+    auto model_compare_x = [](Triangle a, Triangle b) { return a->get_centroid().x < b->get_centroid().x; };
+    auto model_compare_y = [](Triangle a, Triangle b) { return a->get_centroid().y < b->get_centroid().y; };
+    auto model_compare_z = [](Triangle a, Triangle b) { return a->get_centroid().z < b->get_centroid().z; };
+
+
+    if( this->triangles.size() < NUM_MODELS_THRESHOLD )
+        return;
+
+    if( sort_axis % 3 == 0)
+    {
+        /** Sort in x axis **/
+        std::sort(this->triangles.begin(), this->triangles.end(), model_compare_x);
+
+    }else if( sort_axis % 3 == 1)
+    {
+        /** Sort in y axis **/
+        std::sort(this->triangles.begin(), this->triangles.end(), model_compare_y);
+
+    }else{
+        /** Sort in z axis **/
+        std::sort(this->triangles.begin(), this->triangles.end(), model_compare_z);
+    }
+
+
+    /** Split vector into 2 **/
+    std::size_t const half_size = this->triangles.size() / 2;
+    std::vector<Triangle> vec1(this->triangles.begin(), this->triangles.begin() + half_size);
+    std::vector<Triangle> vec2(this->triangles.begin() + half_size, this->triangles.end());
+    
+    Mesh m1( vec1, current_depth+1, sort_axis+1 );
+    Mesh m2( vec2, current_depth+1, sort_axis+1 );
+
+    this->sub_hierarchies.push_back( m1 );
+    this->sub_hierarchies.push_back( m2 );
+
 }
 
 

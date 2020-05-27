@@ -7,7 +7,7 @@
 
 ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<LightSource>& light_sources, const std::vector<Model*>& models)
 {
-    ColorRGB ia = {0.5, 0.5, 0.5};
+    ColorRGB ia = {1.0, 1.0, 1.0};
 
 
     ColorRGB total_intensity = {0.0f, 0.0f, 0.0f};
@@ -19,7 +19,7 @@ ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<Ligh
         normalize(shadow_direction);
         
         /** Move shadow ray origin ever so slightly in the direction of the shadow ray to avoid recollisions **/
-        Vector3 shadow_location = intersection_data.location + (0.01 * intersection_data.normal);
+        Vector3 shadow_location = intersection_data.location + (0.0001 * intersection_data.normal);
 
         Ray shadow_ray{
             .origin = shadow_location,
@@ -53,10 +53,11 @@ ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<Ligh
         Vector3 v = intersection_data.source_location - intersection_data.location;
         normalize(v);
         float r_dot_v = dot_product(reflected_ray, v);
-        r_dot_v = std::pow(r_dot_v, SHININESS);
-        if( r_dot_v < 0.0f)
+        
+        if( r_dot_v < 0.0f )
             r_dot_v = 0.0f;
-
+        else
+            r_dot_v = std::pow(r_dot_v, SHININESS);
 
         total_intensity = total_intensity + (light.light * KS * r_dot_v); /** Specular reflection **/
 

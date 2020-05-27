@@ -153,4 +153,3 @@ Vector3 Triangle::get_centroid()
 
 }
 
-

@@ -15,8 +15,8 @@
 int main(int argc, char** argv)
 {
    //model.display_contents();
-    Vector3 camera_direction = {0.0f, -0.50f, 1.0f};
-    Vector3 camera_origin = {0.0f, 0.25f, -1.8f};
+    Vector3 camera_direction = {-1.0f, 0.0f, 0.0f};
+    Vector3 camera_origin = {4.0f, 0.0f, 0.0f};
     Vector3 camera_view_up_direction = {0.0f, 1.0f, 0.0f};
     Scene scene(0.10f, camera_direction, camera_view_up_direction, camera_origin);
 
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 
         Mesh mesh(in, model_color);
         if(i == 1)
-            mesh.translate( {0.0, -1.0, 0.0} );
+            mesh.translate( {0.0, 0.0, 0.0} );
         
         if(i == 2)
             mesh.translate( {-0.5, 1.0, 0.0} );
@@ -60,6 +60,7 @@ int main(int argc, char** argv)
         std::vector<std::shared_ptr<Model>> triangle_list;
         for(auto& triangle : temp_triangle_list)
         {
+            std::cout << triangle.get_centroid() << std::endl;
             triangle_list.push_back( std::make_shared<Triangle>(triangle));
         }
 
@@ -78,7 +79,6 @@ int main(int argc, char** argv)
     Sphere sphere( {-1.0f, 0.5f, 0.50f}, 0.25, {0.80f, 0.80f, 0.80f} );
     Sphere sphere2( {-1.0f, 1.0f, 0.50f}, 0.25, {0.80f, 0.80f, 0.80f} );
     Sphere sphere3( {-1.0f, 1.5f, 0.50f}, 0.25, {0.80f, 0.80f, 0.80f} );
-    **/
     Sphere sphere( {0.0f, 0.5f, 0.50f}, 0.15, {0.80f, 0.80f, 0.80f} );
     Sphere sphere2( {0.0f, 1.0f, 0.50f}, 0.15, {0.80f, 0.80f, 0.80f} );
     Sphere sphere3( {0.0f, 1.5f, 0.50f}, 0.15, {0.80f, 0.80f, 0.80f} );
@@ -98,18 +98,12 @@ int main(int argc, char** argv)
     scene.add_model(&sphere7);
     scene.add_model(&sphere8);
     scene.add_model(&sphere9);
-    
+    **/
 
 
-    Vector3 light_location = {2.0f, 1.0f, -1.0f};
-    Vector3 light_location2 = {2.0f, 1.0f, -2.0f};
-    Vector3 light_location3 = {-2.0f, 1.0f, -2.0f};
+    Vector3 light_location = {5.0f, -2.0f, 0.0f};
     LightSource light = {light_location, {0.80, 0.80, 0.80}};
-    LightSource light2 = {light_location2, {0.80, 0.80, 0.80}};
-    LightSource light3 = {light_location3, {0.80, 0.80, 0.80}};
     scene.add_light( light );
-    scene.add_light( light2 );
-    scene.add_light( light3 );
     
     std::cout << "Starting render" << std::endl;
     scene.render();

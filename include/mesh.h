@@ -20,6 +20,7 @@ class Mesh: public Model
 {
     private:
         std::vector<Triangle> triangles;
+        std::vector<Mesh> sub_hierarchies;
         BoundingBox bounding_box;
         ColorRGB color;
         
@@ -30,5 +31,4 @@ class Mesh: public Model
         std::optional<RayCollision> ray_intersect( const Ray& ray);
         std::vector<Triangle> get_triangles();
         void translate( Vector3 v );
-        void display_contents();
 };
