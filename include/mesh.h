@@ -23,8 +23,10 @@ class Mesh: public Model
         std::vector<Mesh> sub_hierarchies;
         BoundingBox bounding_box;
         ColorRGB color;
+        void subdivide(int current_depth, int sort_axis);
         
     public:
+        Mesh(ColorRGB color, std::vector<Triangle> triangles, int current_depth, int sort_axis);
         Mesh( std::ifstream& mesh_file, ColorRGB color );
         BoundingBox get_boundingbox();
         Vector3 get_centroid();

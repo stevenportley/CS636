@@ -10,7 +10,6 @@
 #include "scene.h"
 #include "triangle.h"
 #include "light.h"
-#include "boundingvolumehierarchy.h"
 
 int main(int argc, char** argv)
 {
@@ -21,8 +20,8 @@ int main(int argc, char** argv)
     Scene scene(0.10f, camera_direction, camera_view_up_direction, camera_origin);
 
 
-    std::vector<BoundingVolumeHierarchy> hierarchies;
     ColorRGB model_color = {1.0f, 1.0f, 1.0f};
+    std::vector<Mesh> mesh_list;
 
     for(int i = 1; i < argc; i++)
     {
@@ -44,6 +43,7 @@ int main(int argc, char** argv)
             model_color = { 0.80f, 0.00f, 0.80f};
 
         Mesh mesh(in, model_color);
+/**
         if(i == 1)
             mesh.translate( {0.0, 0.0, 0.0} );
         
@@ -55,30 +55,21 @@ int main(int argc, char** argv)
 
         if(i == 4)
             mesh.translate( {0.0, 1.5, 0.0} );
-        
-        std::vector<Triangle> temp_triangle_list = mesh.get_triangles();
-        std::vector<std::shared_ptr<Model>> triangle_list;
-        for(auto& triangle : temp_triangle_list)
-        {
-            std::cout << triangle.get_centroid() << std::endl;
-            triangle_list.push_back( std::make_shared<Triangle>(triangle));
-        }
+**/
 
-        std::cout << triangle_list.size() << std::endl;
-        
+        std::cout << "Adding mesh to list " << std::endl;
 
-        BoundingVolumeHierarchy bvh(triangle_list, 0, 0);
-        std::cout << "Finished generating a BVH" << std::endl;
-        hierarchies.push_back(bvh);
+        mesh_list.push_back(mesh);
+
     }
 
-    for( auto& hierarchy : hierarchies)
-        scene.add_model(&hierarchy);
 
+    for(auto& mesh: mesh_list)
+    {
+        scene.add_model(&mesh);
+    }
+    
 /**
-    Sphere sphere( {-1.0f, 0.5f, 0.50f}, 0.25, {0.80f, 0.80f, 0.80f} );
-    Sphere sphere2( {-1.0f, 1.0f, 0.50f}, 0.25, {0.80f, 0.80f, 0.80f} );
-    Sphere sphere3( {-1.0f, 1.5f, 0.50f}, 0.25, {0.80f, 0.80f, 0.80f} );
     Sphere sphere( {0.0f, 0.5f, 0.50f}, 0.15, {0.80f, 0.80f, 0.80f} );
     Sphere sphere2( {0.0f, 1.0f, 0.50f}, 0.15, {0.80f, 0.80f, 0.80f} );
     Sphere sphere3( {0.0f, 1.5f, 0.50f}, 0.15, {0.80f, 0.80f, 0.80f} );
@@ -98,9 +89,8 @@ int main(int argc, char** argv)
     scene.add_model(&sphere7);
     scene.add_model(&sphere8);
     scene.add_model(&sphere9);
-    **/
 
-
+**/
     Vector3 light_location = {5.0f, -2.0f, 0.0f};
     LightSource light = {light_location, {0.80, 0.80, 0.80}};
     scene.add_light( light );

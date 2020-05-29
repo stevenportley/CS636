@@ -396,9 +396,6 @@ ColorRGB Scene::ray_trace(const Ray& ray)
     if(intersections.size() == 0)
         return { }; /** return black if ray misses **/
 
-    if(intersections.size() == 1)
-        return calculate_light( intersections[0], this->light_sources, this->models);
-
 
     int idx = 0;
     for(int i = 1; i < intersections.size(); i++)
@@ -412,7 +409,6 @@ ColorRGB Scene::ray_trace(const Ray& ray)
     }
 
     return calculate_light( intersections[idx], this->light_sources, this->models);
-
 
 }
 
