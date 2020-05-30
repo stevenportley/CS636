@@ -35,7 +35,7 @@ Vector3 operator*( Vector3 const& lhs, Vector3 const& rhs)
 {
     Vector3 out;
     out.x = (lhs.y * rhs.z) - (lhs.z * rhs.y);
-    out.y = (lhs.x * rhs.z) - (lhs.z * rhs.x);
+    out.y = -1 * ((lhs.x * rhs.z) - (lhs.z * rhs.x));
     out.z = (lhs.x * rhs.y) - (lhs.y * rhs.x);
     return out;
 }

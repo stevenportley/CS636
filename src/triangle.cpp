@@ -93,16 +93,16 @@ std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray)
     float alpha = 1.0f - beta - gamma;
     float t = t_num / matrix_a;
 
-    if( beta <= 0)
+    if( beta < 0)
         return std::optional<RayCollision>();
 
-    if( gamma <= 0)
+    if( gamma < 0)
         return std::optional<RayCollision>();
 
-    if( gamma + beta >= 1)
+    if( gamma + beta > 1)
         return std::optional<RayCollision>();
 
-    if( t <= 0)
+    if( t < 0)
         return std::optional<RayCollision>();
 
     Vector3 point_normal = (alpha * this->A.normal) + (beta * this->B.normal) + (gamma * this->C.normal);

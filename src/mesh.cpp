@@ -86,6 +86,7 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray)
 
     }
 
+
     if(this->sub_hierarchies.size() == 0)
     {
         for( auto& triangle : this->triangles)
@@ -108,6 +109,8 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray)
         return output;
 
     }
+
+    std::cout << "Should never be here" << std::endl;
 
     return output;
 }
@@ -250,7 +253,6 @@ static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::ve
     for(int i = 0; i < vert_locations.size(); i++)
     {   
         
-        int count = 0;
         std::vector<Vector3> temp_normals;
         for(auto& face : faces)
         {
@@ -263,14 +265,10 @@ static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::ve
                 C = vert_locations[ face.p3 ];
 
 
-                //Vector3 this_normal = (B - A) * (C - A);
-               
-                /** We are using left handed data! **/
-                Vector3 this_normal = (C - A) * (B - A);
+                Vector3 this_normal = (B - A) * (C - A);
                 normalize(this_normal);
                 temp_normals.push_back(this_normal);
 
-                count++;
 
             }
         }
@@ -281,7 +279,7 @@ static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::ve
             averaged_normal = averaged_normal + normal;
         }
 
-        averaged_normal = averaged_normal / count;
+        //averaged_normal = averaged_normal / temp_normals.size();
         normalize(averaged_normal);
         normals.push_back(averaged_normal);
 

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <memory>
 
+#include "vector3.h"
 #include "model.h"
 #include "mesh.h"
 #include "sphere.h"
@@ -45,7 +46,7 @@ int main(int argc, char** argv)
         Mesh mesh(in, model_color);
         
         if(i == 1)
-            mesh.translate( {0.0, -2.0, 0.0} );
+            mesh.translate( {0.0, -1.0, 0.0} );
 /**
         
         if(i == 2)
@@ -70,9 +71,9 @@ int main(int argc, char** argv)
         scene.add_model(&mesh);
     }
     
-/**
-    Sphere sphere( {0.0f, 0.5f, 0.50f}, 0.15, {0.80f, 0.80f, 0.80f} );
-    Sphere sphere2( {0.0f, 1.0f, 0.50f}, 0.15, {0.80f, 0.80f, 0.80f} );
+    Sphere sphere( {0.75f, 0.0f, 0.75f}, 0.50, {0.80f, 0.10f, 0.10f} );
+    Sphere sphere2( {0.75f, 0.0f, -0.75f}, 0.50, {0.80f, 0.80f, 0.80f} );
+    /**
     Sphere sphere3( {0.0f, 1.5f, 0.50f}, 0.15, {0.80f, 0.80f, 0.80f} );
     Sphere sphere4( {0.0f, 0.0f, -0.5f}, 0.15, {0.80f, 0.80f, 0.80f} );
     Sphere sphere5( {0.0f, 0.0f, 0.5f}, 0.15, {0.80f, 0.80f, 0.80f} );
@@ -81,8 +82,15 @@ int main(int argc, char** argv)
     Sphere sphere8( {0.0f, -0.5f, 0.5f}, 0.15, {0.80f, 0.80f, 0.80f} );
     Sphere sphere9( {0.0f, 0.5f, -0.50f}, 0.15, {0.80f, 0.80f, 0.80f} );
     
+    **/
+
+
     scene.add_model(&sphere);
     scene.add_model(&sphere2);
+    
+    
+    
+    /**
     scene.add_model(&sphere3);
     scene.add_model(&sphere4);
     scene.add_model(&sphere5);
