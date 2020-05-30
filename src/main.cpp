@@ -14,8 +14,8 @@
 int main(int argc, char** argv)
 {
    //model.display_contents();
-    Vector3 camera_direction = {-1.0f, 0.0f, 0.0f};
-    Vector3 camera_origin = {4.0f, 0.0f, 0.0f};
+    Vector3 camera_direction = {-2.0f, -4.0f, 0.0f};
+    Vector3 camera_origin = {4.0f, 8.0f, 0.0f};
     Vector3 camera_view_up_direction = {0.0f, 1.0f, 0.0f};
     Scene scene(0.10f, camera_direction, camera_view_up_direction, camera_origin);
 
@@ -43,9 +43,10 @@ int main(int argc, char** argv)
             model_color = { 0.80f, 0.00f, 0.80f};
 
         Mesh mesh(in, model_color);
-/**
+        
         if(i == 1)
-            mesh.translate( {0.0, 0.0, 0.0} );
+            mesh.translate( {0.0, -2.0, 0.0} );
+/**
         
         if(i == 2)
             mesh.translate( {-0.5, 1.0, 0.0} );
@@ -91,13 +92,12 @@ int main(int argc, char** argv)
     scene.add_model(&sphere9);
 
 **/
-    Vector3 light_location = {5.0f, -2.0f, 0.0f};
+    Vector3 light_location = {0.0f, 4.0f, 0.0f};
     LightSource light = {light_location, {0.80, 0.80, 0.80}};
     scene.add_light( light );
     
     std::cout << "Starting render" << std::endl;
     scene.render();
-
    
     return 0;
 

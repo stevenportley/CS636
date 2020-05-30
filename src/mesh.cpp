@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <cmath>
@@ -141,6 +142,9 @@ void Mesh::translate( Vector3 v)
 
     this->bounding_box = generate_boundingbox(this->triangles);
 
+    for(auto& sub : this->sub_hierarchies)
+        sub.translate(v);
+                         
 }
 
 BoundingBox generate_boundingbox(std::vector<Triangle>& triangles)
@@ -208,7 +212,7 @@ static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::ve
 
     std::cout << "Processing new model file." << std::endl;
 
-    std::vector<Vector3> vectors;
+    std::vector<Vector3> vert_locations;
     std::vector<Face> faces;
     std::vector<Vector3> normals;
     std::vector<Vertex> vertices;
@@ -229,7 +233,7 @@ static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::ve
                 float p2 = std::stof(subs);
                 iss >> subs;
                 float p3 = std::stof(subs);
-                vectors.push_back( { p1, p2, p3} );
+                vert_locations.push_back( { p1, p2, p3} );
             }else if( subs == "f" )
             {
                 iss >> subs;
@@ -243,7 +247,7 @@ static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::ve
         }
     }
 
-    for(int i = 0; i < vectors.size(); i++)
+    for(int i = 0; i < vert_locations.size(); i++)
     {   
         
         int count = 0;
@@ -254,14 +258,18 @@ static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::ve
             {
                 /** Calculate the normal of face i and add it to the list of normals **/
                 Vector3 A, B, C;
-                A = vectors[ face.p1 ];
-                B = vectors[ face.p2 ];
-                C = vectors[ face.p3 ];
+                A = vert_locations[ face.p1 ];
+                B = vert_locations[ face.p2 ];
+                C = vert_locations[ face.p3 ];
 
 
-                Vector3 this_normal = (B - A) * (C - A);
+                //Vector3 this_normal = (B - A) * (C - A);
+               
+                /** We are using left handed data! **/
+                Vector3 this_normal = (C - A) * (B - A);
                 normalize(this_normal);
                 temp_normals.push_back(this_normal);
+
                 count++;
 
             }
@@ -279,9 +287,9 @@ static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::ve
 
     }
 
-    for(int i = 0; i < vectors.size(); i++)
+    for(int i = 0; i < vert_locations.size(); i++)
     {
-        vertices.push_back( {vectors[i], normals[i]} );
+        vertices.push_back( {vert_locations[i], normals[i]} );
     }
 
     for(auto& face: faces)

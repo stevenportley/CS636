@@ -1,16 +1,18 @@
-
+#include <iostream>
 #include <cmath>
+#include <limits>
 #include "vector3.h"
 #include "model.h"
 #include "light.h"
 
 
-ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<LightSource>& light_sources, const std::vector<Model*>& models)
+ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<LightSource>& light_sources, const std::vector<Model*>& models, int recursion_depth/* =0 */) 
 {
-    ColorRGB ia = {1.0, 1.0, 1.0};
 
 
     ColorRGB total_intensity = {0.0f, 0.0f, 0.0f};
+
+
     for( auto& light : light_sources)
     {
         bool is_shadow = false;
@@ -18,18 +20,17 @@ ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<Ligh
         Vector3 shadow_direction = light.location - intersection_data.location;
         normalize(shadow_direction);
         
-        /** Move shadow ray origin ever so slightly in the direction of the shadow ray to avoid recollisions **/
-        Vector3 shadow_location = intersection_data.location + (0.0001 * intersection_data.normal);
+        /** Move shadow ray origin ever so slightly in the direction of the light source to avoid collisions with ourself **/
+        Vector3 shadow_location = intersection_data.location + ( .0001 * shadow_direction);
 
         Ray shadow_ray{
             .origin = shadow_location,
             .direction = shadow_direction,
         };
-
         for( auto& model : models)
         {
             if( model->ray_intersect( shadow_ray) )
-            {
+            {   
                 is_shadow = true;
                 break;
             }
@@ -39,11 +40,14 @@ ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<Ligh
             continue;
 
         Vector3 object_to_light = light.location - intersection_data.location;
+        
         normalize(object_to_light);
         normalize(intersection_data.normal);
         float n_dot_l = dot_product(intersection_data.normal, object_to_light);
         if( n_dot_l < 0)
+        {
             n_dot_l = 0.0f;
+        }
 
         total_intensity = total_intensity + (light.light * KD * n_dot_l); /** Diffuse reflection **/
 
@@ -52,6 +56,8 @@ ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<Ligh
         normalize(reflected_ray);
         Vector3 v = intersection_data.source_location - intersection_data.location;
         normalize(v);
+        
+
         float r_dot_v = dot_product(reflected_ray, v);
         
         if( r_dot_v < 0.0f )
@@ -63,7 +69,7 @@ ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<Ligh
 
 
     }
-
+    
     total_intensity = total_intensity + (ia * KA);
 
     ColorRGB color = intersection_data.color * total_intensity;

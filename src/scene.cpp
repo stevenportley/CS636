@@ -14,9 +14,9 @@
 #define SS_MAX_DEPTH 2
 #define SS_TOLERANCE 0.15
 
-#define ADAP_SS
+//#define ADAP_SS
 //#define AVG_SS
-//#define NO_SS
+#define NO_SS
 
 #define BASE_VRES 1024
 #define BASE_HRES 1024
