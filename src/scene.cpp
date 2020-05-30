@@ -40,7 +40,6 @@
 int** ray_count;
 int curr_h, curr_v;
 
-std::optional<float> ray_trace(const Ray& ray);
 void write_file(const char * filename, ColorRGB** image, ssize_t width, ssize_t height);
 
 static auto is_tolerable = [](ColorRGB& A, ColorRGB& B)
@@ -64,7 +63,7 @@ Scene::Scene(float viewplane_distance, Vector3 camera_direction, Vector3 camera_
 
 }
 
-void Scene::render()
+void Scene::render() const
 {
 
     /** Camera view angle is 44 degrees **/
@@ -103,7 +102,11 @@ void Scene::render()
 
             this_ray = {camera_origin, view_direction};
 
-            image[v][h] = this->ray_trace(this_ray);
+            std::optional<RayCollision> ray_collision = this->ray_trace(this_ray);
+            if(ray_collision)
+                image[v][h] = calculate_light(*ray_collision, *this);
+            else
+                image[v][h] = { }; //Color it black if misses everyting
 
         }
     }
@@ -240,31 +243,47 @@ void Scene::render()
 }
 
 
-ColorRGB Scene::adap_helper( std::optional<ColorRGB> ss_matrix[5][5], Ray vec_matrix[5][5], int depth, int i, int j, int offset)
+ColorRGB Scene::adap_helper( std::optional<ColorRGB> ss_matrix[5][5], Ray vec_matrix[5][5], int depth, int i, int j, int offset) const
 {
     
     if( !ss_matrix[i][j])
     {
-        ss_matrix[i][j] = this->ray_trace( vec_matrix[i][j]);
-        ray_count[curr_v][curr_h] += 1;
+        std::optional<RayCollision> ray_collision = this->ray_trace( vec_matrix[i][j]); 
+        if(ray_collision)
+        {
+            ss_matrix[i][j] = calculate_light(*ray_collision, *this);
+            ray_count[curr_v][curr_h] += 1;
+        }
     }
 
     if( !ss_matrix[i][j+offset])
     {
-        ss_matrix[i][j+offset] = this->ray_trace( vec_matrix[i][j+offset]);
-        ray_count[curr_v][curr_h] += 1;
+        std::optional<RayCollision> ray_collision = this->ray_trace( vec_matrix[i][j+offset]);
+        if(ray_collision)
+        {
+            ss_matrix[i][j+offset] = calculate_light(*ray_collision, *this);
+            ray_count[curr_v][curr_h] += 1;
+        }
     }
 
     if( !ss_matrix[i+offset][j])
     {
-        ss_matrix[i+offset][j] = this->ray_trace( vec_matrix[i+offset][j]);
-        ray_count[curr_v][curr_h] += 1;
+        std::optional<RayCollision> ray_collision = this->ray_trace( vec_matrix[i+offset][j]);
+        if(ray_collision)
+        {
+            ss_matrix[i+offset][j] = calculate_light(*ray_collision, *this);
+            ray_count[curr_v][curr_h] += 1;
+        }
     }
 
     if( !ss_matrix[i+offset][j+offset])
     {
-        ss_matrix[i+offset][j+offset] = this->ray_trace( vec_matrix[i+offset][j+offset]);
-        ray_count[curr_v][curr_h] += 1;
+        std::optional<RayCollision> ray_collision = this->ray_trace( vec_matrix[i+offset][j+offset]);
+        if(ray_collision)
+        {
+            ss_matrix[i+offset][j+offset] = calculate_light(*ray_collision, *this);
+            ray_count[curr_v][curr_h] += 1;
+        }
     }
 
     if( offset == 1)
@@ -334,7 +353,7 @@ ColorRGB Scene::adap_helper( std::optional<ColorRGB> ss_matrix[5][5], Ray vec_ma
 
 
 
-ColorRGB Scene::adap_ss_ray_trace(Vector3 image_plane_origin, Vector3 horiz_diff, Vector3 horiz_diff_next, Vector3 vert_diff, Vector3 vert_diff_next)
+ColorRGB Scene::adap_ss_ray_trace(Vector3 image_plane_origin, Vector3 horiz_diff, Vector3 horiz_diff_next, Vector3 vert_diff, Vector3 vert_diff_next) const
 {
     std::optional<ColorRGB> ss_matrix[5][5];
     for(int i = 0; i < 5; i++)
@@ -378,37 +397,38 @@ void Scene::add_light(LightSource& new_light)
     this->light_sources.push_back(new_light);
 }
 
-ColorRGB Scene::ray_trace(const Ray& ray)
+std::optional<RayCollision> Scene::ray_trace(const Ray& ray) const
 {
     std::vector<RayCollision> intersections;
-    std::optional<RayCollision> temp;
 
     /** Test this ray with every model and see if there is any intersections (may be more than 1) **/
     for(auto& m : this->models)
     {
-        temp = m->ray_intersect(ray);
-        if(temp)
+        std::optional<RayCollision> this_collision = m->ray_intersect(ray);
+        if(this_collision)
         {
-            intersections.push_back(*temp);
+            intersections.push_back(*this_collision);
         }
     }
 
     if(intersections.size() == 0)
-        return { }; /** return black if ray misses **/
-
+        return std::optional<RayCollision>(); /** return black if ray misses **/
 
     int idx = 0;
     for(int i = 1; i < intersections.size(); i++)
     {
         RayCollision test = intersections[i];
-        if(magnitude(intersections[i].location) < magnitude( intersections[idx].location))
+        float closest_dist = magnitude(intersections[idx].location - intersections[idx].source_location);
+        float new_dist = magnitude(intersections[i].location - intersections[i].source_location);
+
+        if( new_dist < closest_dist)
         {
             idx = i;
         }
 
     }
 
-    return calculate_light( intersections[idx], this->light_sources, this->models);
+    return std::optional<RayCollision>(intersections[idx]);
 
 }
 

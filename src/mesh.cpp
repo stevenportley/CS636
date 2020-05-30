@@ -36,7 +36,8 @@ Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : color(color), bounding_b
 
     this->bounding_box = generate_boundingbox( this->triangles);
 
-    std::cout << "Bounding box: [" << this->bounding_box.p1.x << ", " << this->bounding_box.p1.y << ", "  << this->bounding_box.p1.z << "]   [" << this->bounding_box.p2.x << ", " << this->bounding_box.p2.y  << ", " << this->bounding_box.p2.z << "]" << std::endl;
+    std::cout << "Bounding box: [" << this->bounding_box.p1.x << ", " << this->bounding_box.p1.y << ", "  << this->bounding_box.p1.z 
+        << "]   [" << this->bounding_box.p2.x << ", " << this->bounding_box.p2.y  << ", " << this->bounding_box.p2.z << "]" << std::endl;
 
 
     this->subdivide(0, 0);

@@ -1,8 +1,12 @@
 
 #pragma once
 
+struct ColorRGB;
+struct LightSource;
+
 #include "vector3.h"
 #include "model.h"
+#include "scene.h"
 
 #define KD 0.7f     /** Diffuse surface reflectance coefficient **/
 #define KS 0.5f     /** Specular surface reflectance coefficient **/
@@ -21,7 +25,7 @@ struct LightSource{
     ColorRGB light;
 };
 
-ColorRGB calculate_light(RayCollision& intersection_data, const std::vector<LightSource>& light_sources, const std::vector<Model*>& models, int recursion_depth=0);
+ColorRGB calculate_light(const RayCollision& intersection_data, const Scene& scene, int recursion_depth=0);
 std::ostream& operator<<(std::ostream& os, ColorRGB const& rhs);
 ColorRGB operator+(ColorRGB const& lhs, ColorRGB const& rhs);
 ColorRGB operator*(ColorRGB const& lhs, float const& rhs);
