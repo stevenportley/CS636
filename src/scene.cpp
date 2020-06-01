@@ -14,9 +14,9 @@
 #define SS_MAX_DEPTH 2
 #define SS_TOLERANCE 0.15
 
-//#define ADAP_SS
+#define ADAP_SS
 //#define AVG_SS
-#define NO_SS
+//#define NO_SS
 
 #define BASE_VRES 1024
 #define BASE_HRES 1024
@@ -400,11 +400,12 @@ void Scene::add_light(LightSource& new_light)
 std::optional<RayCollision> Scene::ray_trace(const Ray& ray) const
 {
     std::vector<RayCollision> intersections;
+    std::optional<RayCollision> this_collision;
 
     /** Test this ray with every model and see if there is any intersections (may be more than 1) **/
     for(auto& m : this->models)
     {
-        std::optional<RayCollision> this_collision = m->ray_intersect(ray);
+        this_collision = m->ray_intersect(ray);
         if(this_collision)
         {
             intersections.push_back(*this_collision);
@@ -412,12 +413,13 @@ std::optional<RayCollision> Scene::ray_trace(const Ray& ray) const
     }
 
     if(intersections.size() == 0)
+    {
         return std::optional<RayCollision>(); /** return black if ray misses **/
+    }
 
     int idx = 0;
     for(int i = 1; i < intersections.size(); i++)
     {
-        RayCollision test = intersections[i];
         float closest_dist = magnitude(intersections[idx].location - intersections[idx].source_location);
         float new_dist = magnitude(intersections[i].location - intersections[i].source_location);
 

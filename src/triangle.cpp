@@ -12,47 +12,7 @@ Triangle::Triangle(ColorRGB color, Vertex A, Vertex B, Vertex C) : bounding_box(
     this->B = B;
     this->C = C;
     this->color = color;
-
-    auto max = [](float a, float b, float c)
-    {
-        if(a > b)
-            if(a > c)
-                return a;
-            else
-                return c;
-        else
-            if(b > c)
-                return b;
-            else
-                return c;
-    };
-
-    auto min = [](float a, float b, float c)
-    {
-        if(a < b)
-            if(a < c)
-                return a;
-            else
-                return c;
-        else
-            if(b < c)
-                return b;
-            else
-                return c;
-    };
-
-
-    Vector3 p1 = { min(this->A.location.x, this->B.location.x, this->C.location.x),
-                    min(this->A.location.y, this->B.location.y, this->C.location.y),
-                    min(this->A.location.z, this->B.location.z, this->C.location.z) };
-
-    Vector3 p2 = { max(this->A.location.x, this->B.location.x, this->C.location.x),
-                    max(this->A.location.y, this->B.location.y, this->C.location.y),
-                    max(this->A.location.z, this->B.location.z, this->C.location.z) };
-
-    this->bounding_box = {p1, p2};
-
-
+    this->generate_boundingbox();
 }
 
 std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray)
@@ -136,6 +96,7 @@ void Triangle::translate( Vector3 v)
     this->A.location = this->A.location + v;
     this->B.location = this->B.location + v;
     this->C.location = this->C.location + v;
+    this->generate_boundingbox();
 }
 
 
@@ -152,4 +113,50 @@ Vector3 Triangle::get_centroid()
              (this->A.location.z + this->B.location.z + this->C.location.z) / 3};
 
 }
+
+
+void Triangle::generate_boundingbox()
+{
+
+    auto max = [](float a, float b, float c)
+    {
+        if(a > b)
+            if(a > c)
+                return a;
+            else
+                return c;
+        else
+            if(b > c)
+                return b;
+            else
+                return c;
+    };
+
+    auto min = [](float a, float b, float c)
+    {
+        if(a < b)
+            if(a < c)
+                return a;
+            else
+                return c;
+        else
+            if(b < c)
+                return b;
+            else
+                return c;
+    };
+
+
+    Vector3 p1 = { min(this->A.location.x, this->B.location.x, this->C.location.x),
+                    min(this->A.location.y, this->B.location.y, this->C.location.y),
+                    min(this->A.location.z, this->B.location.z, this->C.location.z) };
+
+    Vector3 p2 = { max(this->A.location.x, this->B.location.x, this->C.location.x),
+                    max(this->A.location.y, this->B.location.y, this->C.location.y),
+                    max(this->A.location.z, this->B.location.z, this->C.location.z) };
+
+    this->bounding_box = {p1, p2};
+
+}
+
 

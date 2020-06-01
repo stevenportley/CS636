@@ -15,6 +15,7 @@ class Triangle : public Model
         Vertex C;
         ColorRGB color;
         BoundingBox bounding_box;
+        void generate_boundingbox();
     public:
         Triangle(ColorRGB color, Vertex A, Vertex B, Vertex C);
         BoundingBox get_boundingbox();

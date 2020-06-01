@@ -12,43 +12,35 @@
 #include "boundingbox.h"
 
 #define NUM_MODELS_THRESHOLD 10
-#define BOUND_MAX_DEPTH 3
+#define BOUND_MAX_DEPTH 5
 
+static BoundingBox generate_boundingbox(std::vector<Mesh>& sub_meshes);
 static BoundingBox generate_boundingbox(std::vector<Triangle>& triangles);
 static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::vector<Triangle>& triangle_list);
 
-Mesh::Mesh(ColorRGB color, std::vector<Triangle> triangles, int current_depth, int sort_axis) : triangles(triangles), color(color), bounding_box({}, {})
+Mesh::Mesh(ColorRGB color, std::vector<Triangle>& triangles, int current_depth, int sort_axis) : color(color), boundingbox({}, {})
 {
-    std::cout << "Initializing mesh with " << triangles.size() << " triangles" << std::endl;
-    this->bounding_box = generate_boundingbox(triangles);
-    this->subdivide(current_depth, sort_axis);
-  
-    std::cout << "Bounding box: [" << this->bounding_box.p1.x << ", " << this->bounding_box.p1.y << ", "  << this->bounding_box.p1.z << "]   [" << this->bounding_box.p2.x << ", " << this->bounding_box.p2.y  << ", " << this->bounding_box.p2.z << "]" << std::endl;
+    if(triangles.size() == 0)
+    {
+        std::cout << "Creating mesh with 0 triangles" << std::endl;
+        return;
+    }
+    this->subdivide(triangles, current_depth, sort_axis);
 }
 
 
-Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : color(color), bounding_box({}, {})
+Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : color(color), boundingbox({}, {})
 {
-
-    parse_model_file(model_file, color, this->triangles);
-
-    std::cout << "Loaded model with " << this->triangles.size() << " trianles" << std::endl;
-
-    this->bounding_box = generate_boundingbox( this->triangles);
-
-    std::cout << "Bounding box: [" << this->bounding_box.p1.x << ", " << this->bounding_box.p1.y << ", "  << this->bounding_box.p1.z 
-        << "]   [" << this->bounding_box.p2.x << ", " << this->bounding_box.p2.y  << ", " << this->bounding_box.p2.z << "]" << std::endl;
-
-
-    this->subdivide(0, 0);
+    std::vector<Triangle> triangle_list;
+    parse_model_file(model_file, color, triangle_list);
+    this->subdivide(triangle_list, 0, 0);
+    std::cout << "Boundingbox: " << this->boundingbox << std::endl;
 }
 
 BoundingBox Mesh::get_boundingbox()
 {
-    return this->bounding_box;
+    return this->boundingbox;
 }
-
-
 
 std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray)
 {
@@ -57,16 +49,16 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray)
     std::optional<RayCollision> temp;
 
     /** Miss bounding box, early drop out **/
-    if(!(this->bounding_box.does_intersect(ray)))
+    if(!(this->boundingbox.does_intersect(ray)))
     {   
         return std::optional<RayCollision>();
     }
 
-    if(this->sub_hierarchies.size() == 2)
+    if(this->sub_meshes.size() == 2)
     {
-        for(auto& sub_hierarchy : this->sub_hierarchies)
+        for(auto& sub_mesh : this->sub_meshes)
         {
-            if( (temp = sub_hierarchy.ray_intersect(ray)) )
+            if( (temp = sub_mesh.ray_intersect(ray)) )
             {
 
                 /** We have a collision **/
@@ -88,7 +80,7 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray)
     }
 
 
-    if(this->sub_hierarchies.size() == 0)
+    if(this->sub_meshes.size() == 0)
     {
         for( auto& triangle : this->triangles)
         {
@@ -116,19 +108,14 @@ std::optional<RayCollision> Mesh::ray_intersect( const Ray& ray)
     return output;
 }
 
-std::vector<Triangle> Mesh::get_triangles()
-{
-
-    return this->triangles;
-}
-
 
 Vector3 Mesh::get_centroid()
 {
+    std::cout << "get_centroid not implemented" << std::endl;
+    exit(1);
     Vector3 centroids_sum = { 0.0f, 0.0f, 0.0f};
     for(auto& triangle : this->triangles)
     {
-
         centroids_sum = centroids_sum + triangle.get_centroid();
     }
 
@@ -139,75 +126,68 @@ Vector3 Mesh::get_centroid()
 void Mesh::translate( Vector3 v)
 {
 
-    for(auto& triangle : this->triangles)
+    if( this->sub_meshes.size() > 0)
     {
-        triangle.translate(v);
+        for(auto& sub_mesh : sub_meshes)
+        {
+            sub_mesh.translate(v);
+        }
+        this->boundingbox = generate_boundingbox(this->sub_meshes);
+    }else
+    {
+        for(auto& triangle : this->triangles)
+        {
+            triangle.translate(v);
+        }
+        this->boundingbox = generate_boundingbox(this->triangles);
     }
 
-    this->bounding_box = generate_boundingbox(this->triangles);
-
-    for(auto& sub : this->sub_hierarchies)
-        sub.translate(v);
-                         
 }
 
-BoundingBox generate_boundingbox(std::vector<Triangle>& triangles)
-{
-    std::vector<std::shared_ptr<BoundingBox>> boxes;
 
-    for(auto& tri : triangles)
+void Mesh::subdivide(std::vector<Triangle>& triangles, int current_depth, int sort_axis)
+{
+
+    if( (current_depth > BOUND_MAX_DEPTH) || (triangles.size() < NUM_MODELS_THRESHOLD))
     {
-        boxes.push_back( std::make_shared<BoundingBox>( tri.get_boundingbox() ));
+        this->triangles = triangles;
+        this->boundingbox = generate_boundingbox(this->triangles);
+        return;
     }
-
-    return generate_boundingbox( boxes );
-}
-
-void Mesh::subdivide(int current_depth, int sort_axis)
-{
-
-    if( current_depth > BOUND_MAX_DEPTH)
-        return;
-
-    if( this->triangles.size() < NUM_MODELS_THRESHOLD)
-        return;
-
 
     /** Functions used to compare centroids of models, for sorting **/
     auto model_compare_x = [](Triangle& a, Triangle& b) { return a.get_centroid().x < b.get_centroid().x; };
     auto model_compare_y = [](Triangle& a, Triangle& b) { return a.get_centroid().y < b.get_centroid().y; };
     auto model_compare_z = [](Triangle& a, Triangle& b) { return a.get_centroid().z < b.get_centroid().z; };
 
-
-    if( this->triangles.size() < NUM_MODELS_THRESHOLD )
-        return;
-
     if( sort_axis % 3 == 0)
     {
         /** Sort in x axis **/
-        std::sort(this->triangles.begin(), this->triangles.end(), model_compare_x);
+        std::sort(triangles.begin(), triangles.end(), model_compare_x);
 
     }else if( sort_axis % 3 == 1)
     {
         /** Sort in y axis **/
-        std::sort(this->triangles.begin(), this->triangles.end(), model_compare_y);
+        std::sort(triangles.begin(), triangles.end(), model_compare_y);
 
     }else{
         /** Sort in z axis **/
-        std::sort(this->triangles.begin(), this->triangles.end(), model_compare_z);
+        std::sort(triangles.begin(), triangles.end(), model_compare_z);
     }
 
-
     /** Split vector into 2 **/
-    std::size_t const half_size = this->triangles.size() / 2;
-    std::vector<Triangle> vec1(this->triangles.begin(), this->triangles.begin() + half_size);
-    std::vector<Triangle> vec2(this->triangles.begin() + half_size, this->triangles.end());
-    
+    std::size_t const half_size = triangles.size() / 2;
+    std::vector<Triangle> vec1(triangles.begin(), triangles.begin() + half_size);
+    std::vector<Triangle> vec2(triangles.begin() + half_size, triangles.end());
+
     Mesh m1( this->color, vec1, current_depth+1, sort_axis+1 );
     Mesh m2( this->color, vec2, current_depth+1, sort_axis+1 );
 
-    this->sub_hierarchies.push_back( m1 );
-    this->sub_hierarchies.push_back( m2 );
+
+    this->sub_meshes.push_back( m1 );
+    this->sub_meshes.push_back( m2 );
+
+    this->boundingbox = generate_boundingbox(this->sub_meshes);
 
 }
 
@@ -297,5 +277,30 @@ static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::ve
     }
     
     std::cout << "Finished loading model " << std::endl;
+
+}
+
+
+
+static BoundingBox generate_boundingbox(std::vector<Triangle>& triangles)
+{
+    std::vector<BoundingBox> boxes;
+    for(auto& triangle : triangles)
+    {
+        boxes.push_back(triangle.get_boundingbox());
+    }
+
+    return generate_boundingbox(boxes);
+}
+
+static BoundingBox generate_boundingbox(std::vector<Mesh>& sub_meshes)
+{
+    std::vector<BoundingBox> boxes;
+    for(auto& sub_mesh : sub_meshes)
+    {
+        boxes.push_back( sub_mesh.get_boundingbox() );
+    }
+
+    return generate_boundingbox(boxes);
 
 }

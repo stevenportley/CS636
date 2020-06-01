@@ -12,8 +12,8 @@
 
 ColorRGB ks = { 0.3f, 0.3f, 0.3f};
 ColorRGB kd = { 0.7f, 0.7f, 0.7f};
-ColorRGB kr = { 0.3f, 0.3f, 0.3f};
-ColorRGB ka = { 0.5f, 0.5f, 0.5f};
+ColorRGB kr = { 0.6f, 0.6f, 0.6f};
+ColorRGB ka = { 0.4f, 0.4f, 0.4f};
 
 ColorRGB calculate_light(const RayCollision& intersection_data, const Scene& scene, int recursion_depth/* =0 */)
 {
@@ -36,8 +36,6 @@ ColorRGB calculate_light(const RayCollision& intersection_data, const Scene& sce
         Vector3 H = (L+V) / magnitude(L+V);
         normalize(H);
 
-
-
         /** Shadow check **/
         
         // Move shadow ray origin ever so slightly in the direction of the light source to avoid collisions with ourself **/
@@ -51,8 +49,13 @@ ColorRGB calculate_light(const RayCollision& intersection_data, const Scene& sce
         std::optional<RayCollision> shadow_collision = scene.ray_trace( shadow_ray );
 
         if(shadow_collision)
-            continue;
-
+        {
+            float light_distance = magnitude(light.location - intersection_data.location);
+            float model_distance = magnitude(shadow_collision->location - intersection_data.location);
+            /** Is collision block the light source? **/
+            if( model_distance < light_distance)
+                continue;
+        }
 
         
         /** Diffuse reflection **/

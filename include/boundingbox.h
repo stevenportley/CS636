@@ -22,5 +22,5 @@ public:
 
 #include "model.h"
 
-BoundingBox generate_boundingbox(const std::vector<std::shared_ptr<BoundingBox>>& boxes);
-BoundingBox generate_boundingbox(const std::vector<std::shared_ptr<Model>>& models);
+BoundingBox generate_boundingbox(const std::vector<BoundingBox>& boxes);
+std::ostream& operator<<(std::ostream& os, BoundingBox const& rhs);
