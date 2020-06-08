@@ -16,12 +16,23 @@ struct Vertex{
     Vector3 normal;
 };
 
-struct RayCollision
+struct ModelProperties
 {
     ColorRGB color;
+    float refr_index;
+    ColorRGB ks;
+    ColorRGB kd;
+    ColorRGB kr;
+    ColorRGB kt;
+    ColorRGB ka;
+};
+
+struct RayCollision
+{
     Vector3 location;
     Vector3 normal;
     Vector3 source_location;
+    ModelProperties model_properties;
 };
 
 class Model{

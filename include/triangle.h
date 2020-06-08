@@ -13,11 +13,11 @@ class Triangle : public Model
         Vertex A;
         Vertex B;
         Vertex C;
-        ColorRGB color;
+        ModelProperties model_properties;
         BoundingBox bounding_box;
         void generate_boundingbox();
     public:
-        Triangle(ColorRGB color, Vertex A, Vertex B, Vertex C);
+        Triangle(Vertex A, Vertex B, Vertex C, ModelProperties model_properties);
         BoundingBox get_boundingbox();
         Vector3 get_centroid();
         void translate(Vector3 v);

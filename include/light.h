@@ -25,7 +25,7 @@ struct LightSource{
     ColorRGB light;
 };
 
-ColorRGB calculate_light(const RayCollision& intersection_data, const Scene& scene, int recursion_depth=0);
+ColorRGB calculate_light(const RayCollision& intersection_data, const Scene& scene, int recursion_depth=0, bool is_inside_model=false);
 std::ostream& operator<<(std::ostream& os, ColorRGB const& rhs);
 ColorRGB operator+(ColorRGB const& lhs, ColorRGB const& rhs);
 ColorRGB operator*(ColorRGB const& lhs, float const& rhs);

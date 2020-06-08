@@ -6,13 +6,13 @@
 #include "light.h"
 
 
-Triangle::Triangle(ColorRGB color, Vertex A, Vertex B, Vertex C) : bounding_box( {},{} )
+Triangle::Triangle(Vertex A, Vertex B, Vertex C, ModelProperties model_properties) : bounding_box( {},{} )
 {
     this->A = A;
     this->B = B;
     this->C = C;
-    this->color = color;
     this->generate_boundingbox();
+    this->model_properties = model_properties;
 }
 
 std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray)
@@ -78,15 +78,14 @@ std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray)
 
 
     RayCollision ray_collision = {
-        .color = this->color,
         .location = intersection,
         .normal = point_normal,
-        .source_location = ray.origin
+        .source_location = ray.origin,
+        .model_properties = this->model_properties
     };
 
 
     return std::optional<RayCollision>(ray_collision);
-
 
 }
 
@@ -111,7 +110,6 @@ Vector3 Triangle::get_centroid()
     return { (this->A.location.x + this->B.location.x + this->C.location.x) / 3,
              (this->A.location.y + this->B.location.y + this->C.location.y) / 3,
              (this->A.location.z + this->B.location.z + this->C.location.z) / 3};
-
 }
 
 

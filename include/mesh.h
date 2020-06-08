@@ -22,12 +22,12 @@ class Mesh: public Model
         std::vector<Triangle> triangles;
         std::vector<Mesh> sub_meshes;
         BoundingBox boundingbox;
-        ColorRGB color;
+        ModelProperties model_properties;
         void subdivide(std::vector<Triangle>& triangles, int current_depth, int sort_axis);
         
     public:
-        Mesh(ColorRGB color, std::vector<Triangle>& triangles, int current_depth, int sort_axis);
-        Mesh( std::ifstream& mesh_file, ColorRGB color );
+        Mesh(ModelProperties model_properties, std::vector<Triangle>& triangles, int current_depth, int sort_axis);
+        Mesh( std::ifstream& mesh_file, ModelProperties model_properties);
         BoundingBox get_boundingbox();
         Vector3 get_centroid();
         std::optional<RayCollision> ray_intersect( const Ray& ray);

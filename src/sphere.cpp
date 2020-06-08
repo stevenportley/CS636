@@ -3,11 +3,11 @@
 #include "model.h"
 #include "sphere.h"
 
-Sphere::Sphere(Vector3 origin, float radius, ColorRGB color) : bounding_box( {}, {})
+Sphere::Sphere(Vector3 origin, float radius, ModelProperties model_properties) : bounding_box( {}, {})
 {
     this->origin = origin;
     this->radius = radius;
-    this->color = color;
+    this->model_properties = model_properties;
 
     Vector3 p1 = { this->origin.x - this->radius,
                     this->origin.y - this->radius,
@@ -90,10 +90,10 @@ std::optional<RayCollision> Sphere::ray_intersect(const Ray& ray)
     //Vector3 surface_normal = 
     RayCollision output =
     {
-        .color = this->color,
         .location = intersection,
         .normal = surface_normal,
-        .source_location = ray.origin
+        .source_location = ray.origin,
+        .model_properties = this->model_properties
     };
 
     return std::optional<RayCollision>(output);

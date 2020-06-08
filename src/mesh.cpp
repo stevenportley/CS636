@@ -16,9 +16,9 @@
 
 static BoundingBox generate_boundingbox(std::vector<Mesh>& sub_meshes);
 static BoundingBox generate_boundingbox(std::vector<Triangle>& triangles);
-static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::vector<Triangle>& triangle_list);
+static void parse_model_file( std::ifstream& model_file, ModelProperties model_properties, std::vector<Triangle>& triangle_list);
 
-Mesh::Mesh(ColorRGB color, std::vector<Triangle>& triangles, int current_depth, int sort_axis) : color(color), boundingbox({}, {})
+Mesh::Mesh(ModelProperties model_properties, std::vector<Triangle>& triangles, int current_depth, int sort_axis) : boundingbox({}, {})
 {
     if(triangles.size() == 0)
     {
@@ -29,10 +29,11 @@ Mesh::Mesh(ColorRGB color, std::vector<Triangle>& triangles, int current_depth, 
 }
 
 
-Mesh::Mesh(std::ifstream& model_file, ColorRGB color) : color(color), boundingbox({}, {})
+Mesh::Mesh(std::ifstream& model_file, ModelProperties model_properties) : boundingbox({}, {})
 {
+    this->model_properties = model_properties;
     std::vector<Triangle> triangle_list;
-    parse_model_file(model_file, color, triangle_list);
+    parse_model_file(model_file, model_properties, triangle_list);
     this->subdivide(triangle_list, 0, 0);
     std::cout << "Boundingbox: " << this->boundingbox << std::endl;
 }
@@ -180,8 +181,8 @@ void Mesh::subdivide(std::vector<Triangle>& triangles, int current_depth, int so
     std::vector<Triangle> vec1(triangles.begin(), triangles.begin() + half_size);
     std::vector<Triangle> vec2(triangles.begin() + half_size, triangles.end());
 
-    Mesh m1( this->color, vec1, current_depth+1, sort_axis+1 );
-    Mesh m2( this->color, vec2, current_depth+1, sort_axis+1 );
+    Mesh m1( this->model_properties, vec1, current_depth+1, sort_axis+1 );
+    Mesh m2( this->model_properties, vec2, current_depth+1, sort_axis+1 );
 
 
     this->sub_meshes.push_back( m1 );
@@ -191,7 +192,7 @@ void Mesh::subdivide(std::vector<Triangle>& triangles, int current_depth, int so
 
 }
 
-static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::vector<Triangle>& triangle_list)
+static void parse_model_file( std::ifstream& model_file, ModelProperties model_properties, std::vector<Triangle>& triangle_list)
 {
 
     std::cout << "Processing new model file." << std::endl;
@@ -273,7 +274,7 @@ static void parse_model_file( std::ifstream& model_file, ColorRGB color, std::ve
 
     for(auto& face: faces)
     {
-        triangle_list.push_back( Triangle(color, vertices[face.p1], vertices[face.p2], vertices[face.p3]) );
+        triangle_list.push_back( Triangle(vertices[face.p1], vertices[face.p2], vertices[face.p3], model_properties));
     }
     
     std::cout << "Finished loading model " << std::endl;
