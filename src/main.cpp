@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     ModelProperties default_properties = {
         .color = {0.80f, 0.80f, 0.80f},
         .refr_index = 1.0f,
-        .ks = {0.4f, 0.4f, 0.4f},
+        .ks = {0.3f, 0.3f, 0.3f},
         .kd = {0.6f, 0.6f, 0.6f},
         .kr = {0.3f, 0.3f, 0.3f},
         .kt = {0.1f, 0.1f, 0.1f},
@@ -47,7 +47,23 @@ int main(int argc, char** argv)
             mesh_prop.color = { 0.90f, 0.90f, 0.90f};
 
         if(i == 3)
+        {
             mesh_prop.color = { 0.8f, 0.2f, 0.20f};
+            mesh_prop.refr_index = 1.33f;
+            mesh_prop.kt = {0.8f, 0.8f, 0.8f};
+            mesh_prop.kd = {0.3f, 0.3f, 0.3f};
+        }
+
+        if(i == 4)
+        {
+            mesh_prop.color = { 0.2f, 0.5f, 0.5f};
+        }
+
+        if(i == 5)
+        {
+            mesh_prop.color = {0.80f, 0.80f, 0.80f};
+        }
+
 
         Mesh mesh(in, mesh_prop);
 
@@ -55,13 +71,13 @@ int main(int argc, char** argv)
             mesh.translate( {0.0, 0.0, 0.0} );
 
         if(i == 3)
-            mesh.translate( {0.0, 1.0, 1.0} );
+            mesh.translate( {1.25, 1.2, 0.25f} );
 
         if(i == 4)
-            mesh.translate( {0.0, 0.5, -1.0} );
+            mesh.translate( {0.75, 0.5f, -0.5} );
 
         if(i == 5)
-            mesh.translate( {-1.5, 1.0, 1.0} );
+            mesh.translate( {-1.0f, 0.5f, 0.0f} );
 
         mesh_list.push_back(mesh);
 
@@ -83,38 +99,42 @@ int main(int argc, char** argv)
 
     ModelProperties s2 = default_properties;
     ModelProperties s3 = default_properties;
+    ModelProperties s4 = default_properties;
     s2.color = { 0.80f, 0.20f, 0.20f};
     s3.color = { 0.20f, 0.80f, 0.20f};
+    s4.color = { 0.20f, 0.20f, 0.80f};
 
     
-    Sphere sphere( {1.5f, 1.5f, 0.0f}, 0.35, clear );
-    Sphere sphere2( {0.25f, 0.15f, -0.25f}, 0.15, default_properties);
-    Sphere sphere3( {0.60f, 0.15f, 0.20f}, 0.15, default_properties);
-    Sphere sphere4( {0.0f, 0.2f, -0.5f}, 0.15, default_properties);
-    Sphere sphere5( {0.3f, 0.2f, 0.0f}, 0.15, default_properties);
-    Sphere sphere6( {-0.2f, 0.3f, 0.15f}, 0.15, default_properties);
+    Sphere sphere( {0.95f, 0.6f, 0.15f}, 0.15, clear );
+    Sphere sphere2( {0.65f, 0.75f, -0.25f}, 0.15, clear);
+    Sphere sphere3( {0.60f, 0.95f, 0.60f}, 0.15, clear);
+    Sphere sphere4( {0.0f, 0.4f, -0.5f}, 0.25, s3);
+    Sphere sphere5( {0.3f, 0.5f, 0.0f}, 0.25, s2);
+    Sphere sphere6( {-0.2f, 0.4f, 0.25f}, 0.25, s4);
     Sphere sphere7( {0.4f, 0.15f, 0.5f}, 0.15, s3);
     Sphere sphere8( {-0.4f, 0.4f, 0.5f}, 0.15, s3);
     Sphere sphere9( {0.0f, 0.55f, -0.10f}, 0.15, s2);
-    
+
+/**    
     scene.add_model(&sphere);
-/**
     scene.add_model(&sphere2);
     scene.add_model(&sphere3);
+    **/
     scene.add_model(&sphere4);
     scene.add_model(&sphere5);
     scene.add_model(&sphere6);
-**/
+    /**
     scene.add_model(&sphere7);
     scene.add_model(&sphere8);
     scene.add_model(&sphere9);
+    **/
 
-    Vector3 light_location = {5.0f, 5.0f, 5.0f};
+    Vector3 light_location = {5.0f, 10.0f, 3.25f};
     LightSource light = {light_location, {0.80, 0.80, 0.80}};
-    Vector3 light_location2 = {-5.0f, 5.0f, -5.0f};
+    Vector3 light_location2 = {5.0f, 10.0f, -3.25f};
     LightSource light2 = {light_location2, {0.80, 0.80, 0.80}};
     scene.add_light( light );
-    scene.add_light( light2 );
+//    scene.add_light( light2 );
     
     std::cout << "Starting render" << std::endl;
     scene.render();

@@ -75,6 +75,9 @@ std::optional<RayCollision> Triangle::ray_intersect( const Ray& ray)
         ray.origin.z + (t*ray.direction.z),
     };
 
+    if( dot_product(ray.direction, point_normal) > 0)
+        point_normal = -1 * point_normal;
+
 
 
     RayCollision ray_collision = {
