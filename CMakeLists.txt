@@ -6,8 +6,11 @@ set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_STANDARD 17)
 
 include_directories(include)
+add_subdirectory(thirdparty/spdlog)
 
 file(GLOB SOURCES "src/*.cpp")
 
 add_executable(main ${SOURCES})
+
+target_link_libraries(main spdlog::spdlog)
 
